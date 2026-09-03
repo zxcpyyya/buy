@@ -22,8 +22,10 @@ public class AddressDO implements Serializable {
     
     /**
      * 地址ID
+     *
+     * 重要：广播表使用雪花算法保证全局唯一
      */
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
     
     /**

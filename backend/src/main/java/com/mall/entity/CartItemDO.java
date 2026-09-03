@@ -23,15 +23,23 @@ public class CartItemDO implements Serializable {
     
     /**
      * 购物车商品ID
+     *
+     * 重要：广播表在每个分片库都完整复制一份，
+     * 如果使用 AUTO 自增，多库ID会重复。使用雪花算法ASSIGN_ID保证全局唯一。
      */
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
     
     /**
      * 购物车ID
      */
     private Long cartId;
-    
+
+    /**
+     * 用户ID（冗余，便于查询）
+     */
+    private Long userId;
+
     /**
      * 商品ID
      */
@@ -41,11 +49,16 @@ public class CartItemDO implements Serializable {
      * 购买数量
      */
     private Integer quantity;
-    
+
     /**
      * 商品单价
      */
     private BigDecimal price;
+
+    /**
+     * 是否选中：0-否，1-是
+     */
+    private Integer selected;
     
     /**
      * 创建时间

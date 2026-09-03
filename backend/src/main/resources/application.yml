@@ -2,30 +2,27 @@ spring:
   application:
     name: mall-server
   
-  # 数据源配置
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/mall?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: root
-    password: root123456
-  
-  # Redis配置
-  redis:
-    host: localhost
-    port: 6379
-    database: 0
-    timeout: 5000ms
-    lettuce:
-      pool:
-        max-active: 8
-        max-wait: -1ms
-        max-idle: 8
-        min-idle: 0
+  profiles:
+    active: dev
   
   # Jackson配置
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
+
+  # Hikari 连接池配置（dev模式生效，sharding模式由ShardingSphere接管）
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/mall?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true
+    username: root
+    password: root123456
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
 
 # MyBatis-Plus配置
 mybatis-plus:
@@ -42,7 +39,7 @@ mybatis-plus:
 
 # JWT配置
 jwt:
-  secret: your-256-bit-secret-key-for-jwt-signing-must-be-long-enough
+  secret: your-256-bit-secret-key-for-jwt-signing-must-be-long-enough-2024
   expiration: 86400000  # 24小时（毫秒）
 
 # 订单超时配置（分钟）
@@ -57,7 +54,8 @@ server:
 # 日志配置
 logging:
   level:
-    com.mall: INFO
+    com.mall: DEBUG
     com.mall.task: DEBUG
+    org.apache.shardingsphere: DEBUG
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"

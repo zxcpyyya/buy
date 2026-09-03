@@ -23,15 +23,23 @@ public class OrderItemDO implements Serializable {
     
     /**
      * 订单项ID
+     *
+     * 重要：使用雪花算法分布式主键
      */
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
-    
+
     /**
      * 订单ID
      */
     private Long orderId;
-    
+
+    /**
+     * 用户ID（冗余 + 分片键）
+     */
+    @TableField("user_id")
+    private Long userId;
+
     /**
      * 商品ID
      */

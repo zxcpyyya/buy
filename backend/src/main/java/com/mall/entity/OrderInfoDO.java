@@ -17,24 +17,27 @@ import java.time.LocalDateTime;
 @Data
 @TableName("order_info")
 public class OrderInfoDO implements Serializable {
-    
+
     @Serial
     private static final long serialVersionUID = 1L;
-    
+
     /**
      * 订单ID
+     *
+     * 重要：使用雪花算法分布式主键，不能用 IdType.AUTO
      */
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
-    
+
     /**
      * 订单号
      */
     private String orderNo;
-    
+
     /**
-     * 用户ID
+     * 用户ID（分片键）
      */
+    @TableField("user_id")
     private Long userId;
     
     /**

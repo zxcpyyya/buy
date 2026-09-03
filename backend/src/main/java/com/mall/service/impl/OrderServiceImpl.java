@@ -11,10 +11,13 @@ import com.mall.entity.*;
 import com.mall.mapper.*;
 import com.mall.service.OrderService;
 import com.mall.service.ProductService;
+import com.mall.sharding.ShardingHintUtils;
+import com.mall.sharding.ShardingKeyUtils;
 import com.mall.vo.OrderItemVO;
 import com.mall.vo.OrderVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shardingsphere.infra.hint.HintManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -182,54 +185,83 @@ public class OrderServiceImpl implements OrderService {
     
     /**
      * 获取用户订单列表
+     *
+     * 性能优化：按 user_id 路由到具体分片，单库单表查询，性能最佳。
      */
     @Override
     public Page<OrderVO> getUserOrders(Long userId, Integer status, Integer pageNum, Integer pageSize) {
         Page<OrderInfoDO> page = new Page<>(pageNum, pageSize);
-        
-        LambdaQueryWrapper<OrderInfoDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(OrderInfoDO::getUserId, userId);
-        
-        if (Objects.nonNull(status)) {
-            wrapper.eq(OrderInfoDO::getOrderStatus, status);
+
+        // 使用 Hint 强制路由到用户所在的分片
+        try (HintManager hintManager = ShardingHintUtils.forceRouteByUserId(userId)) {
+            LambdaQueryWrapper<OrderInfoDO> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(OrderInfoDO::getUserId, userId);
+
+            if (Objects.nonNull(status)) {
+                wrapper.eq(OrderInfoDO::getOrderStatus, status);
+            }
+
+            wrapper.orderByDesc(OrderInfoDO::getCreateTime);
+
+            Page<OrderInfoDO> result = orderInfoMapper.selectPage(page, wrapper);
+
+            // 转换分页结果
+            Page<OrderVO> pageResult = new Page<>(result.getCurrent(), result.getSize(), result.getTotal());
+            pageResult.setRecords(result.getRecords().stream()
+                .map(order -> {
+                    List<OrderItemDO> items = orderItemMapper.selectList(
+                        new LambdaQueryWrapper<OrderItemDO>()
+                            .eq(OrderItemDO::getOrderId, order.getId())
+                    );
+                    return this.convertToVO(order, items.stream()
+                        .map(this::convertToItemVO)
+                        .collect(Collectors.toList()));
+                })
+                .collect(Collectors.toList()));
+
+            return pageResult;
         }
-        
-        wrapper.orderByDesc(OrderInfoDO::getCreateTime);
-        
-        Page<OrderInfoDO> result = orderInfoMapper.selectPage(page, wrapper);
-        
-        // 转换分页结果
-        Page<OrderVO> pageResult = new Page<>(result.getCurrent(), result.getSize(), result.getTotal());
-        pageResult.setRecords(result.getRecords().stream()
-            .map(order -> {
-                List<OrderItemDO> items = orderItemMapper.selectList(
-                    new LambdaQueryWrapper<OrderItemDO>()
-                        .eq(OrderItemDO::getOrderId, order.getId())
-                );
-                return this.convertToVO(order, items.stream()
-                    .map(this::convertToItemVO)
-                    .collect(Collectors.toList()));
-            })
-            .collect(Collectors.toList()));
-        
-        return pageResult;
     }
     
     /**
      * 获取订单详情（内部使用）
+     *
+     * 关键：在 ShardingSphere 分片环境下，订单ID 是雪花算法生成的，
+     * 与 user_id 没有直接对应关系。需要使用 Hint 机制轮询所有分片。
+     *
+     * 性能说明：单次查询会扫描所有分片，但只查询一次（轮询查找）。
+     * 如果是高频场景，建议订单号中编码 user_id 以加速查询。
      */
     @Override
     public OrderInfoDO getOrderById(Long orderId, Long userId) {
-        OrderInfoDO orderInfoDO = orderInfoMapper.selectById(orderId);
+        OrderInfoDO orderInfoDO = null;
+
+        // 方案1：在所有分片中查找订单
+        // 由于雪花算法ID无法直接定位分片，需要遍历所有分片
+        for (int dbIndex = 0; dbIndex < ShardingKeyUtils.DB_COUNT; dbIndex++) {
+            for (int tableIndex = 0; tableIndex < ShardingKeyUtils.TABLE_COUNT; tableIndex++) {
+                try (HintManager hintManager = ShardingHintUtils.forceRoute(dbIndex, tableIndex)) {
+                    OrderInfoDO temp = orderInfoMapper.selectById(orderId);
+                    if (Objects.nonNull(temp)) {
+                        orderInfoDO = temp;
+                        break;
+                    }
+                }
+            }
+            if (Objects.nonNull(orderInfoDO)) {
+                break;
+            }
+        }
+
         if (Objects.isNull(orderInfoDO)) {
             throw new BusinessException("A0401", "订单不存在");
         }
-        
+
         // 权限校验（阿里规范：水平权限校验）
         if (!orderInfoDO.getUserId().equals(userId)) {
             throw new BusinessException("A0301", "无权限访问该订单");
         }
-        
+
         return orderInfoDO;
     }
     

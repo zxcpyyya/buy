@@ -23,6 +23,7 @@
         <mybatis-plus.version>3.5.5</mybatis-plus.version>
         <jwt.version>0.12.3</jwt.version>
         <hutool.version>5.8.23</hutool.version>
+        <shardingsphere.version>5.4.1</shardingsphere.version>
     </properties>
     
     <dependencies>
@@ -88,6 +89,18 @@
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
             <version>${hutool.version}</version>
+        </dependency>
+
+        <!-- ShardingSphere-JDBC 5.x 客户端分片 -->
+        <dependency>
+            <groupId>org.apache.shardingsphere</groupId>
+            <artifactId>shardingsphere-jdbc-core</artifactId>
+            <version>${shardingsphere.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.shardingsphere</groupId>
+            <artifactId>shardingsphere-infra-util</artifactId>
+            <version>${shardingsphere.version}</version>
         </dependency>
         
         <!-- Swagger/OpenAPI -->

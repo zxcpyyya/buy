@@ -91,8 +91,7 @@ CREATE TABLE cart (
     update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     deleted TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '删除标记：0-未删除，1-已删除',
     PRIMARY KEY (id),
-    UNIQUE KEY uk_user_id (user_id),
-    KEY idx_user_id (user_id)
+    UNIQUE KEY uk_user_id (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='购物车表';
 
 -- =============================================
@@ -102,14 +101,17 @@ DROP TABLE IF EXISTS cart_item;
 CREATE TABLE cart_item (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '购物车商品ID',
     cart_id BIGINT UNSIGNED NOT NULL COMMENT '购物车ID',
+    user_id BIGINT UNSIGNED NOT NULL COMMENT '用户ID（冗余，便于查询）',
     product_id BIGINT UNSIGNED NOT NULL COMMENT '商品ID',
     quantity INT UNSIGNED NOT NULL DEFAULT 1 COMMENT '购买数量',
     price DECIMAL(10, 2) NOT NULL COMMENT '商品单价',
+    selected TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '是否选中：0-否，1-是',
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     deleted TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '删除标记：0-未删除，1-已删除',
     PRIMARY KEY (id),
     KEY idx_cart_id (cart_id),
+    KEY idx_user_id (user_id),
     KEY idx_product_id (product_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='购物车商品项表';
 
@@ -173,6 +175,7 @@ DROP TABLE IF EXISTS order_item;
 CREATE TABLE order_item (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '订单项ID',
     order_id BIGINT UNSIGNED NOT NULL COMMENT '订单ID',
+    user_id BIGINT UNSIGNED NOT NULL COMMENT '用户ID（冗余，便于查询）',
     product_id BIGINT UNSIGNED NOT NULL COMMENT '商品ID',
     product_name VARCHAR(200) NOT NULL COMMENT '商品名称（冗余）',
     product_image VARCHAR(500) DEFAULT NULL COMMENT '商品图片（冗余）',
@@ -184,6 +187,7 @@ CREATE TABLE order_item (
     deleted TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '删除标记：0-未删除，1-已删除',
     PRIMARY KEY (id),
     KEY idx_order_id (order_id),
+    KEY idx_user_id (user_id),
     KEY idx_product_id (product_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单商品项表';
 
