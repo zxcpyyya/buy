@@ -1,0 +1,344 @@
+// =============================================
+// Apple Design System - 全局样式
+// 参考：developer.apple.com/design
+// =============================================
+
+// === 字体系统 ===
+$font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+  'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+$font-family-zh: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+
+// === 字号系统（Apple Typography）===
+$font-size-xs: 12px;
+$font-size-sm: 14px;
+$font-size-base: 17px;      // Body - Apple标准正文
+$font-size-md: 19px;        // Callout
+$font-size-lg: 21px;        // Title 3
+$font-size-xl: 28px;        // Title 2
+$font-size-2xl: 34px;       // Title 1
+$font-size-3xl: 48px;       // Large Title
+$font-size-4xl: 64px;       // Hero
+
+// === 字重 ===
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// === 行高 ===
+$line-height-tight: 1.07;
+$line-height-snug: 1.21;
+$line-height-normal: 1.47;
+$line-height-relaxed: 1.6;
+
+// === 颜色系统（Apple Colors）===
+
+// 系统灰阶
+$color-black: #000000;
+$color-gray-1: #1d1d1f;     // Primary Text
+$color-gray-2: #424245;     // Secondary Text
+$color-gray-3: #6e6e73;     // Tertiary Text
+$color-gray-4: #86868b;     // Quaternary
+$color-gray-5: #d2d2d7;     // Separator
+$color-gray-6: #f5f5f7;     // Background Light
+$color-gray-7: #fbfbfd;     // Background
+$color-white: #ffffff;
+
+// 品牌色
+$color-primary: #0071e3;    // Apple Blue
+$color-primary-hover: #0077ed;
+$color-primary-active: #006edb;
+
+// 系统色
+$color-success: #30d158;
+$color-warning: #ff9f0a;
+$color-danger: #ff3b30;
+
+// === 间距系统（8pt Grid）===
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-2xl: 48px;
+$spacing-3xl: 64px;
+$spacing-4xl: 96px;
+$spacing-5xl: 128px;
+
+// === 圆角 ===
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 18px;
+$radius-xl: 24px;
+$radius-full: 980px;       // Apple 按钮圆角
+
+// === 阴影（Apple风格柔和阴影）===
+$shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+$shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.12);
+$shadow-xl: 0 24px 60px rgba(0, 0, 0, 0.16);
+
+// === 断点 ===
+$breakpoint-mobile: 734px;
+$breakpoint-tablet: 834px;
+$breakpoint-desktop: 1024px;
+$breakpoint-large: 1440px;
+
+// === 过渡 ===
+$transition-fast: 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+$transition-base: 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+$transition-slow: 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+
+// =============================================
+// Reset & Base
+// =============================================
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: $font-family;
+  font-size: $font-size-base;
+  line-height: $line-height-normal;
+  color: $color-gray-1;
+  background-color: $color-white;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+a {
+  color: $color-primary;
+  text-decoration: none;
+  transition: color $transition-fast;
+  
+  &:hover {
+    color: $color-primary-hover;
+  }
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  outline: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+input, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  outline: none;
+}
+
+// =============================================
+// Apple风格容器
+// =============================================
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 $spacing-md;
+  
+  @media (min-width: $breakpoint-tablet) {
+    padding: 0 $spacing-lg;
+  }
+  
+  @media (min-width: $breakpoint-large) {
+    max-width: 1440px;
+  }
+}
+
+.container-large {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 $spacing-md;
+  
+  @media (min-width: $breakpoint-tablet) {
+    padding: 0 $spacing-xl;
+  }
+}
+
+// =============================================
+// 排版工具类
+// =============================================
+.typography-hero {
+  font-size: $font-size-3xl;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-tight;
+  letter-spacing: -0.015em;
+  color: $color-gray-1;
+  
+  @media (min-width: $breakpoint-tablet) {
+    font-size: $font-size-4xl;
+  }
+}
+
+.typography-title {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-snug;
+  letter-spacing: -0.01em;
+}
+
+.typography-headline {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-snug;
+}
+
+.typography-body {
+  font-size: $font-size-base;
+  font-weight: $font-weight-regular;
+  line-height: $line-height-normal;
+  color: $color-gray-1;
+}
+
+.typography-secondary {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-regular;
+  color: $color-gray-3;
+  line-height: $line-height-normal;
+}
+
+// =============================================
+// Apple风格按钮
+// =============================================
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  padding: 8px 16px;
+  font-size: $font-size-base;
+  font-weight: $font-weight-regular;
+  border-radius: $radius-full;
+  transition: all $transition-fast;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  
+  &-primary {
+    background: $color-primary;
+    color: $color-white;
+    
+    &:hover {
+      background: $color-primary-hover;
+    }
+    
+    &:active {
+      background: $color-primary-active;
+      transform: scale(0.98);
+    }
+  }
+  
+  &-secondary {
+    background: transparent;
+    color: $color-primary;
+    border: 1px solid $color-primary;
+    
+    &:hover {
+      background: rgba(0, 113, 227, 0.08);
+    }
+  }
+  
+  &-ghost {
+    background: transparent;
+    color: $color-gray-1;
+    
+    &:hover {
+      color: $color-primary;
+    }
+  }
+  
+  &-large {
+    padding: 12px 24px;
+    font-size: $font-size-md;
+  }
+}
+
+// =============================================
+// Apple风格卡片
+// =============================================
+.card {
+  background: $color-white;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  transition: all $transition-base;
+  
+  &-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-lg;
+  }
+}
+
+// =============================================
+// 辅助类
+// =============================================
+.text-center { text-align: center; }
+.text-primary { color: $color-primary; }
+.text-secondary { color: $color-gray-3; }
+
+.section {
+  padding: $spacing-4xl 0;
+  
+  @media (min-width: $breakpoint-tablet) {
+    padding: $spacing-5xl 0;
+  }
+}
+
+.bg-light {
+  background: $color-gray-6;
+}
+
+.bg-white {
+  background: $color-white;
+}
+
+// 滚动条美化
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $color-gray-5;
+  border-radius: $radius-full;
+  
+  &:hover {
+    background: $color-gray-3;
+  }
+}
+
+// 通用动画
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+}
