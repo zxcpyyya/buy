@@ -1,0 +1,15 @@
+package com.mall.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.mall.entity.AddressDO;
+import org.apache.ibatis.annotations.Mapper;
+
+/**
+ * 收货地址Mapper接口
+ * 
+ * @author mall
+ * @date 2024/01/01
+ */
+@Mapper
+public interface AddressMapper extends BaseMapper<AddressDO> {
+}
