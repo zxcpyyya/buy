@@ -1,43 +1,44 @@
 package com.mall.config;
 
 import com.mall.interceptor.AuthInterceptor;
-import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 /**
- * Web MVC配置类
- * 
- * @author xiu
- * @date 2024/01/01
+ * Web MVC 配置
+ *
+ * @author mall
  */
 @Configuration
-@RequiredArgsConstructor
 public class WebMvcConfig implements WebMvcConfigurer {
-    
-    /**
-     * 认证拦截器
-     */
-    private final AuthInterceptor authInterceptor;
-    
-    /**
-     * 配置拦截器
-     */
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(authInterceptor)
-            .addPathPatterns("/api/**")
-            .excludePathPatterns(
-                "/api/user/login",
-                "/api/user/register",
-                "/api/product/list",
-                "/api/product/detail",
-                "/api/product/hot",
-                "/api/product/new",
-                "/api/category/tree",
-                "/swagger-ui/**",
-                "/v3/api-docs/**"
-            );
+        // 权限验证拦截器
+        registry.addInterceptor(authInterceptor())
+                .addPathPatterns("/api/admin/**")  // 后台管理接口需要验证
+                .excludePathPatterns("/api/admin/auth/**");  // 排除登录接口
+
+        // 公开接口：商品搜索等不需要登录
+        // 这些接口通过 @RequireLogin(required = false) 来控制
+    }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOriginPatterns("*")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true)
+                .maxAge(3600);
+    }
+
+    @Bean
+    public AuthInterceptor authInterceptor() {
+        return new AuthInterceptor();
     }
 }

@@ -1,175 +1,196 @@
 package com.mall.interceptor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import cn.hutool.core.util.StrUtil;
+import com.mall.common.annotation.RequireLogin;
+import com.mall.common.annotation.RequirePermission;
+import com.mall.common.annotation.RequireRole;
+import com.mall.common.enums.UserType;
 import com.mall.common.exception.BusinessException;
-import com.mall.common.result.Result;
-import com.mall.context.UserContext;
-import com.mall.util.JwtUtil;
+import com.mall.context.AdminContext;
+import com.mall.service.AdminAuthService;
+import com.mall.service.JwtService;
+import com.mall.vo.AdminUserVO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Objects;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * 用户认证拦截器
- * 
- * 
- * 1. 使用SLF4J日志框架
- * 2. 异常处理完善
- * 3. JWT Token验证
- * 
- * @author xiu
- * @date 2024/01/01
+ * 权限验证拦截器
+ * 1. 解析Token并设置上下文
+ * 2. 验证用户登录状态
+ * 3. 验证用户角色
+ * 4. 验证用户权限
+ *
+ * @author mall
  */
 @Slf4j
-@Component
-@RequiredArgsConstructor
 public class AuthInterceptor implements HandlerInterceptor {
-    
-    /**
-     * JWT工具类
-     */
-    private final JwtUtil jwtUtil;
-    
-    /**
-     * ObjectMapper
-     */
-    private final ObjectMapper objectMapper;
-    
-    /**
-     * 请求头名称
-     */
-    private static final String AUTHORIZATION_HEADER = "Authorization";
-    
-    /**
-     * Bearer前缀
-     */
-    private static final String BEARER_PREFIX = "Bearer ";
-    
-    /**
-     * 不需要认证的路径
-     */
-    private static final String[] EXCLUDE_PATHS = {
-        "/api/user/login",
-        "/api/user/register",
-        "/api/product/list",
-        "/api/product/detail",
-        "/api/product/hot",
-        "/api/product/new",
-        "/api/category/tree",
-        "/swagger-ui",
-        "/v3/api-docs",
-        "/error"
-    };
-    
-    /**
-     * 前置处理
-     */
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private AdminAuthService adminAuthService;
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        // 获取请求路径
-        String requestURI = request.getRequestURI();
-        String contextPath = request.getContextPath();
-        String path = requestURI.substring(contextPath.length());
-        
-        // 检查是否需要认证
-        if (this.isExcludePath(path)) {
+        // 如果不是HandlerMethod，直接放行
+        if (!(handler instanceof HandlerMethod)) {
             return true;
         }
-        
-        // 获取Token
-        String token = this.extractToken(request);
-        if (!StringUtils.hasText(token)) {
-            this.writeErrorResponse(response, new BusinessException("A0301", "请先登录"));
-            return false;
+
+        HandlerMethod handlerMethod = (HandlerMethod) handler;
+
+        // 获取类和方法上的注解
+        RequireLogin classLogin = handlerMethod.getBeanType().getAnnotation(RequireLogin.class);
+        RequireLogin methodLogin = handlerMethod.getMethodAnnotation(RequireLogin.class);
+        RequireLogin requireLogin = methodLogin != null ? methodLogin : classLogin;
+
+        RequireRole classRole = handlerMethod.getBeanType().getAnnotation(RequireRole.class);
+        RequireRole methodRole = handlerMethod.getMethodAnnotation(RequireRole.class);
+        RequireRole requireRole = methodRole != null ? methodRole : classRole;
+
+        RequirePermission classPerm = handlerMethod.getBeanType().getAnnotation(RequirePermission.class);
+        RequirePermission methodPerm = handlerMethod.getMethodAnnotation(RequirePermission.class);
+        RequirePermission requirePerm = methodPerm != null ? methodPerm : classPerm;
+
+        // 1. 解析Token并设置上下文
+        String token = extractToken(request);
+        AdminContext.AdminUser adminUser = null;
+
+        if (StrUtil.isNotBlank(token)) {
+            try {
+                adminUser = buildAdminUser(token);
+                AdminContext.setAdmin(adminUser);
+            } catch (Exception e) {
+                log.debug("Token解析失败: {}", e.getMessage());
+            }
         }
-        
-        // 验证Token
-        if (!jwtUtil.validateToken(token)) {
-            this.writeErrorResponse(response, new BusinessException("A0301", "Token已过期，请重新登录"));
-            return false;
+
+        // 2. 检查是否需要登录
+        if (requireLogin != null && requireLogin.required()) {
+            if (adminUser == null) {
+                throw BusinessException.of(401, "请先登录");
+            }
+        } else if (requireLogin == null && adminUser == null) {
+            // 没有RequireLogin注解且没有登录，直接放行（公开接口）
+            return true;
         }
-        
-        // 解析Token获取用户信息
-        Long userId = jwtUtil.getUserIdFromToken(token);
-        String username = jwtUtil.getUsernameFromToken(token);
-        
-        if (Objects.isNull(userId) || !StringUtils.hasText(username)) {
-            this.writeErrorResponse(response, new BusinessException("A0301", "无效的Token"));
-            return false;
+
+        // 3. 如果已登录，验证用户类型
+        if (adminUser != null) {
+            // 验证用户类型
+            if (requireRole != null && requireRole.userType().length > 0) {
+                boolean typeMatch = Arrays.stream(requireRole.userType())
+                        .anyMatch(t -> t == adminUser.getUserType());
+                if (!typeMatch) {
+                    throw BusinessException.of(403, "无权访问该接口");
+                }
+            }
+
+            // 验证角色
+            if (requireRole != null && requireRole.value().length > 0) {
+                boolean hasRole = false;
+                List<String> userRoles = adminUser.getRoleCodes();
+
+                if (adminUser.getIsSuperAdmin()) {
+                    // 超管拥有所有角色
+                    hasRole = true;
+                } else if (userRoles != null) {
+                    if (requireRole.logic() == RequireRole.Logic.AND) {
+                        // 与：需要满足所有角色
+                        hasRole = Arrays.stream(requireRole.value())
+                                .allMatch(role -> userRoles.contains(role));
+                    } else {
+                        // 或：只需要满足任一角色
+                        hasRole = Arrays.stream(requireRole.value())
+                                .anyMatch(role -> userRoles.contains(role));
+                    }
+                }
+
+                if (!hasRole) {
+                    throw BusinessException.of(403, "您没有该角色权限");
+                }
+            }
+
+            // 验证权限
+            if (requirePerm != null && requirePerm.value().length > 0) {
+                boolean hasPermission = false;
+                Set<String> userPerms = adminUser.getPermissions() != null ?
+                        adminUser.getPermissions().stream().collect(Collectors.toSet()) : null;
+
+                if (adminUser.getIsSuperAdmin()) {
+                    // 超管拥有所有权限
+                    hasPermission = true;
+                } else if (userPerms != null) {
+                    if (requirePerm.logic() == RequirePermission.Logic.AND) {
+                        // 与：需要满足所有权限
+                        hasPermission = Arrays.stream(requirePerm.value())
+                                .allMatch(perm -> userPerms.contains(perm));
+                    } else {
+                        // 或：只需要满足任一权限
+                        hasPermission = Arrays.stream(requirePerm.value())
+                                .anyMatch(perm -> userPerms.contains(perm));
+                    }
+                }
+
+                if (!hasPermission) {
+                    throw BusinessException.of(403, "您没有该操作权限");
+                }
+            }
         }
-        
-        // 设置用户上下文（ThreadLocal使用后必须清理）
-        UserContext.UserInfo userInfo = new UserContext.UserInfo();
-        userInfo.setUserId(userId);
-        userInfo.setUsername(username);
-        userInfo.setToken(token);
-        UserContext.setUserInfo(userInfo);
-        
-        log.debug("用户认证成功, userId={}, username={}", userId, username);
-        
+
         return true;
     }
-    
-    /**
-     * 请求完成后清理
-     */
+
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
-        // 清理ThreadLocal（ThreadLocal必须清理）
-        UserContext.clear();
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        // 请求完成后清空上下文
+        AdminContext.clear();
     }
-    
+
     /**
      * 从请求中提取Token
-     *
-     * @param request HttpServletRequest
-     * @return Token
      */
     private String extractToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
-            return bearerToken.substring(BEARER_PREFIX.length());
+        String bearerToken = request.getHeader("Authorization");
+        if (StrUtil.isNotBlank(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
         }
         return null;
     }
-    
+
     /**
-     * 检查是否是排除路径
-     *
-     * @param path 请求路径
-     * @return 是否是排除路径
+     * 构建AdminUser上下文
      */
-    private boolean isExcludePath(String path) {
-        for (String excludePath : EXCLUDE_PATHS) {
-            if (path.startsWith(excludePath)) {
-                return true;
-            }
+    private AdminContext.AdminUser buildAdminUser(String token) {
+        // 从Token中解析基本信息
+        Long userId = jwtService.getUserIdFromToken(token);
+        if (userId == null) {
+            return null;
         }
-        return false;
-    }
-    
-    /**
-     * 写入错误响应
-     *
-     * @param response HttpServletResponse
-     * @param exception 业务异常
-     */
-    private void writeErrorResponse(HttpServletResponse response, BusinessException exception) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json;charset=UTF-8");
-        
-        Result<?> errorResult = Result.error(exception.getErrorCode(), exception.getErrorMessage());
-        String json = objectMapper.writeValueAsString(errorResult);
-        
-        response.getWriter().write(json);
+
+        // 从数据库获取完整用户信息
+        AdminUserVO userVO = adminAuthService.verifyToken(token);
+
+        AdminContext.AdminUser adminUser = new AdminContext.AdminUser();
+        adminUser.setId(userVO.getId());
+        adminUser.setUsername(userVO.getUsername());
+        adminUser.setNickname(userVO.getNickname());
+        adminUser.setRoleCodes(userVO.getRoles());
+        adminUser.setPermissions(userVO.getPermissions());
+        adminUser.setIsSuperAdmin(userVO.getIsSuperAdmin());
+        adminUser.setMerchantId(userVO.getMerchantId());
+        adminUser.setUserType(userVO.getUserType() != null ? userVO.getUserType() : UserType.ADMIN);
+
+        return adminUser;
     }
 }
