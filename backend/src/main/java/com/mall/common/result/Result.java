@@ -9,7 +9,7 @@ import java.io.Serializable;
  * 统一响应结果封装类
  * 
  * @author xiu
- * @date 2024/01/01
+ * @date 2026/09/03
  */
 @Data
 public class Result<T> implements Serializable {

@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 /**
  * 商家实体类
  *
- * @author mall
+ * @author xiu
  */
 @Data
 @TableName("sys_merchant")

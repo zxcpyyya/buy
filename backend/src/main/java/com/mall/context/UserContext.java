@@ -8,7 +8,7 @@ import lombok.Data;
  * 使用ThreadLocal保存当前线程的用户信息，避免在方法参数中传递用户ID
  * 
  * @author xiu
- * @date 2024/01/01
+ * @date 2026/09/03
  */
 public class UserContext {
     

@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 /**
  * 商家Mapper
  *
- * @author mall
+ * @author xiu
  */
 @Mapper
 public interface SysMerchantMapper extends BaseMapper<SysMerchantDO> {

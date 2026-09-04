@@ -9,8 +9,8 @@ import org.apache.ibatis.annotations.Select;
 /**
  * 用户优惠券Mapper
  *
- * @author mall
- * @date 2024/01/01
+ * @author xiu
+ * @date 2026/09/03
  */
 @Mapper
 public interface UserCouponMapper extends BaseMapper<UserCouponDO> {

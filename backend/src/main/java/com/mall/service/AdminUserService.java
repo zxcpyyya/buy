@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * 后台用户服务接口
  *
- * @author mall
+ * @author xiu
  */
 public interface AdminUserService {
 

@@ -16,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
  * 操作日志拦截器
  * 自动记录带有 @OperationLog 注解的方法调用
  *
- * @author mall
+ * @author xiu
  */
 @Slf4j
 public class OperationLogInterceptor implements HandlerInterceptor {

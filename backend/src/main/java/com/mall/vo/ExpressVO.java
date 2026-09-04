@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 /**
  * 物流信息VO
  *
- * @author mall
+ * @author xiu
  */
 @Data
 public class ExpressVO implements Serializable {

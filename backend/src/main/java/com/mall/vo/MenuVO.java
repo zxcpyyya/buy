@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * 菜单VO
  *
- * @author mall
+ * @author xiu
  */
 @Data
 public class MenuVO implements Serializable {

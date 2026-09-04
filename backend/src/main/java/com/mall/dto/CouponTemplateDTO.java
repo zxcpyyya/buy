@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 /**
  * 优惠券模板DTO
  *
- * @author mall
+ * @author xiu
  */
 @Data
 public class CouponTemplateDTO implements Serializable {

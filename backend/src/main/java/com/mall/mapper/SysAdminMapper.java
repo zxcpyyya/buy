@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 /**
  * 后台管理员Mapper
  *
- * @author mall
+ * @author xiu
  */
 @Mapper
 public interface SysAdminMapper extends BaseMapper<SysAdminDO> {

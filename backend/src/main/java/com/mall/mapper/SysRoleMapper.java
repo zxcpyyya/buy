@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 /**
  * 角色Mapper
  *
- * @author mall
+ * @author xiu
  */
 @Mapper
 public interface SysRoleMapper extends BaseMapper<SysRoleDO> {

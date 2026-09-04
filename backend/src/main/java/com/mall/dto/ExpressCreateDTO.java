@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 /**
  * 物流创建DTO
  *
- * @author mall
+ * @author xiu
  */
 @Data
 public class ExpressCreateDTO implements Serializable {

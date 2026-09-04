@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * 优惠券服务接口
  *
- * @author mall
+ * @author xiu
  */
 public interface CouponService {
 

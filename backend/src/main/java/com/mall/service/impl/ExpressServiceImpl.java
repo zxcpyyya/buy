@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 /**
  * 物流服务实现类
  *
- * @author mall
+ * @author xiu
  */
 @Slf4j
 @Service

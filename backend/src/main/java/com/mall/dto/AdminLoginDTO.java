@@ -9,7 +9,7 @@ import java.io.Serializable;
 /**
  * 后台管理员登录DTO
  *
- * @author mall
+ * @author xiu
  */
 @Data
 public class AdminLoginDTO implements Serializable {

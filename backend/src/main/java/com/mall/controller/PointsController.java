@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * 积分Controller
  *
- * @author mall
+ * @author xiu
  */
 @Slf4j
 @RestController

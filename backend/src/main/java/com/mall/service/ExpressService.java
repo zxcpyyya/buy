@@ -6,7 +6,7 @@ import com.mall.vo.ExpressVO;
 /**
  * 物流服务接口
  *
- * @author mall
+ * @author xiu
  */
 public interface ExpressService {
 

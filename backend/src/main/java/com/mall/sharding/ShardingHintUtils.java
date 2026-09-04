@@ -20,7 +20,7 @@ import org.apache.shardingsphere.infra.hint.HintManagerFactory;
  * 使用 try-with-resources 确保 Hint 资源及时释放
  *
  * @author xiu
- * @date 2024/01/01
+ * @date 2026/09/03
  */
 @Slf4j
 public class ShardingHintUtils {

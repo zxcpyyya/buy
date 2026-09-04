@@ -10,7 +10,7 @@ import java.io.Serializable;
  * 用户登录请求DTO
  * 
  * @author xiu
- * @date 2024/01/01
+ * @date 2026/09/03
  */
 @Data
 public class LoginDTO implements Serializable {

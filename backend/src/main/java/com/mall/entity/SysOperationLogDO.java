@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 /**
  * 操作日志实体类
  *
- * @author mall
+ * @author xiu
  */
 @Data
 @TableName("sys_operation_log")

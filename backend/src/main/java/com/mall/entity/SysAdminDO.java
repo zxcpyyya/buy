@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 /**
  * 后台管理员实体类
  *
- * @author mall
+ * @author xiu
  */
 @Data
 @TableName("sys_admin")

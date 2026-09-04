@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * 3. 验证用户角色
  * 4. 验证用户权限
  *
- * @author mall
+ * @author xiu
  */
 @Slf4j
 public class AuthInterceptor implements HandlerInterceptor {

@@ -3,7 +3,7 @@ package com.mall.common.enums;
 /**
  * 权限类型枚举
  *
- * @author mall
+ * @author xiu
  */
 public enum PermissionType {
 

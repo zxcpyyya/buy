@@ -10,7 +10,7 @@ import java.math.BigDecimal;
  * 购物车商品项VO
  * 
  * @author xiu
- * @date 2024/01/01
+ * @date 2026/09/03
  */
 @Data
 public class CartItemVO implements Serializable {

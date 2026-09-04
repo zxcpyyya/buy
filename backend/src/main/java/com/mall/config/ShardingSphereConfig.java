@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
  * 配置说明见 application-sharding.yml
  *
  * @author xiu
- * @date 2024/01/01
+ * @date 2026/09/03
  */
 @Configuration
 @ConditionalOnProperty(name = "spring.shardingsphere.enabled", havingValue = "true")

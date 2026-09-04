@@ -4,7 +4,7 @@ import java.lang.annotation.*;
 
 /**
  * 登录验证注解
- * 标注在Controller方法上，表示该接口需要登录
+ * 标注在Controller或方法上，表示需要登录才能访问
  *
  * @author mall
  */
@@ -14,8 +14,7 @@ import java.lang.annotation.*;
 public @interface RequireLogin {
 
     /**
-     * 是否强制要求登录，默认true
-     * 设置为false时，有token会验证，无token也放行
+     * 是否需要登录，默认true
      */
     boolean required() default true;
 }

@@ -12,7 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
  * Spring Security配置
  * 配置禁用表单登录，使用JWT Token认证
  *
- * @author mall
+ * @author xiu
  */
 @Configuration
 @EnableWebSecurity

@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  * 优惠券模板表实体类
  *
  * @author xiu
- * @date 2024/01/01
+ * @date 2026/09/03
  */
 @Data
 @TableName("coupon_template")

@@ -12,7 +12,7 @@ import java.util.List;
  * 订单详情VO
  * 
  * @author xiu
- * @date 2024/01/01
+ * @date 2026/09/03
  */
 @Data
 public class OrderVO implements Serializable {

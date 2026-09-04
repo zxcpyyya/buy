@@ -10,7 +10,7 @@ import java.util.List;
  * 商品分类VO
  * 
  * @author xiu
- * @date 2024/01/01
+ * @date 2026/09/03
  */
 @Data
 public class ProductCategoryVO implements Serializable {

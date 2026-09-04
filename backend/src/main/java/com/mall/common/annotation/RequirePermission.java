@@ -4,7 +4,7 @@ import java.lang.annotation.*;
 
 /**
  * 权限验证注解
- * 标注在Controller方法上，表示该接口需要特定权限
+ * 标注在Controller或方法上，表示需要特定权限才能访问
  *
  * @author mall
  */
@@ -14,29 +14,27 @@ import java.lang.annotation.*;
 public @interface RequirePermission {
 
     /**
-     * 权限标识，多个用逗号分隔
-     * 如：product:add, product:edit
+     * 允许访问的权限列表
      */
     String[] value() default {};
 
     /**
-     * 权限逻辑：AND表示同时满足，OR表示满足其一
+     * 逻辑运算方式
      */
     Logic logic() default Logic.OR;
 
     /**
-     * 用户类型要求
+     * 逻辑运算
      */
-    UserType[] userType() default {};
-
     enum Logic {
         /**
-         * 与：所有权限都满足
+         * 或：满足任意一个权限即可
          */
-        AND,
+        OR,
+
         /**
-         * 或：满足任一权限即可
+         * 与：需要满足所有权限
          */
-        OR
+        AND
     }
 }

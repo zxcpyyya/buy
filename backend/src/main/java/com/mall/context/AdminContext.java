@@ -1,72 +1,56 @@
 package com.mall.context;
 
 import com.mall.common.enums.UserType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.io.Serial;
-import java.io.Serializable;
+import java.util.List;
+import java.util.Set;
 
 /**
- * 后台管理员上下文
- * 用于在请求线程中存储当前登录的管理员信息
+ * 后台管理上下文
+ * 用于在请求周期内存储当前登录用户信息
  *
  * @author mall
  */
-@Data
-public class AdminContext implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class AdminContext {
 
     private static final ThreadLocal<AdminUser> ADMIN_USER = new ThreadLocal<>();
 
     /**
-     * 设置当前管理员
-     */
-    public static void setAdmin(AdminUser admin) {
-        ADMIN_USER.set(admin);
-    }
-
-    /**
-     * 获取当前管理员
+     * 获取当前登录用户
      */
     public static AdminUser getAdmin() {
         return ADMIN_USER.get();
     }
 
     /**
-     * 获取当前管理员ID
+     * 设置当前登录用户
      */
-    public static Long getAdminId() {
-        AdminUser admin = ADMIN_USER.get();
-        return admin != null ? admin.getId() : null;
+    public static void setAdmin(AdminUser admin) {
+        ADMIN_USER.set(admin);
     }
 
     /**
-     * 获取当前管理员用户名
-     */
-    public static String getUsername() {
-        AdminUser admin = ADMIN_USER.get();
-        return admin != null ? admin.getUsername() : null;
-    }
-
-    /**
-     * 清空上下文
+     * 清除上下文
      */
     public static void clear() {
         ADMIN_USER.remove();
     }
 
     /**
-     * 管理员用户信息
+     * 后台管理员用户信息
      */
     @Data
-    public static class AdminUser implements Serializable {
-        @Serial
-        private static final long serialVersionUID = 1L;
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AdminUser {
 
         /**
-         * 管理员ID
+         * 用户ID
          */
         private Long id;
 
@@ -81,24 +65,9 @@ public class AdminContext implements Serializable {
         private String nickname;
 
         /**
-         * 角色ID列表
+         * 头像
          */
-        private java.util.List<Long> roleIds;
-
-        /**
-         * 角色标识列表
-         */
-        private java.util.List<String> roleCodes;
-
-        /**
-         * 权限标识列表
-         */
-        private java.util.List<String> permissions;
-
-        /**
-         * 商家ID（如果是商家用户）
-         */
-        private Long merchantId;
+        private String avatar;
 
         /**
          * 用户类型
@@ -106,8 +75,28 @@ public class AdminContext implements Serializable {
         private UserType userType;
 
         /**
-         * 是否超管
+         * 是否超级管理员
          */
         private Boolean isSuperAdmin;
+
+        /**
+         * 商家ID（商家用户才有）
+         */
+        private Long merchantId;
+
+        /**
+         * 商家名称
+         */
+        private String merchantName;
+
+        /**
+         * 角色代码列表
+         */
+        private List<String> roleCodes;
+
+        /**
+         * 权限列表
+         */
+        private Set<String> permissions;
     }
 }

@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 /**
  * 优惠券服务实现类
  *
- * @author mall
+ * @author xiu
  */
 @Slf4j
 @Service

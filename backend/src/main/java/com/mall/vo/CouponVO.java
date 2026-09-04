@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 /**
  * 优惠券VO
  *
- * @author mall
+ * @author xiu
  */
 @Data
 public class CouponVO {

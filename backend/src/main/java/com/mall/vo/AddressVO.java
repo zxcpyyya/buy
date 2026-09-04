@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
  * 收货地址VO
  * 
  * @author xiu
- * @date 2024/01/01
+ * @date 2026/09/03
  */
 @Data
 public class AddressVO implements Serializable {

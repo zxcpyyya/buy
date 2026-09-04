@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 权限Mapper
  *
- * @author mall
+ * @author xiu
  */
 @Mapper
 public interface SysPermissionMapper extends BaseMapper<SysPermissionDO> {

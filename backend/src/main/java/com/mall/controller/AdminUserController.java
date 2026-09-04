@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * 后台用户Controller
  *
- * @author mall
+ * @author xiu
  */
 @RestController
 @RequestMapping("/api/admin/user")

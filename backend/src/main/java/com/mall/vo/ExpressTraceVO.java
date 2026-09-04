@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 /**
  * 物流轨迹VO
  *
- * @author mall
+ * @author xiu
  */
 @Data
 public class ExpressTraceVO implements Serializable {

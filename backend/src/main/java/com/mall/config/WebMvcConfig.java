@@ -11,7 +11,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 /**
  * Web MVC 配置
  *
- * @author mall
+ * @author xiu
  */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {

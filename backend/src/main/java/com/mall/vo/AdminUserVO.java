@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * 后台用户VO
  *
- * @author mall
+ * @author xiu
  */
 @Data
 public class AdminUserVO implements Serializable {

@@ -1,80 +1,48 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import request from '@/utils/request'
 
 export const useUserStore = defineStore('user', () => {
-  // State
-  const token = ref(localStorage.getItem('admin_token') || '')
-  const userInfo = ref(JSON.parse(localStorage.getItem('admin_userInfo') || '{}'))
-  const permissions = ref(JSON.parse(localStorage.getItem('admin_permissions') || '[]'))
-
-  // Getters
-  const isLoggedIn = computed(() => !!token.value)
-  const isSuperAdmin = computed(() => userInfo.value?.isSuperAdmin === true)
-  const username = computed(() => userInfo.value?.username || '')
-
-  // Actions
-  function setToken(newToken) {
+  const token = ref(localStorage.getItem('token') || '')
+  const userInfo = ref(JSON.parse(localStorage.getItem('userInfo') || 'null'))
+  
+  const isLogin = computed(() => !!token.value)
+  
+  const setToken = (newToken) => {
     token.value = newToken
-    localStorage.setItem('admin_token', newToken)
+    localStorage.setItem('token', newToken)
   }
-
-  function setUserInfo(info) {
+  
+  const setUserInfo = (info) => {
     userInfo.value = info
-    localStorage.setItem('admin_userInfo', JSON.stringify(info))
+    localStorage.setItem('userInfo', JSON.stringify(info))
   }
-
-  function setPermissions(perms) {
-    permissions.value = perms
-    localStorage.setItem('admin_permissions', JSON.stringify(perms))
-  }
-
-  function hasPermission(perm) {
-    // 超管拥有所有权限
-    if (isSuperAdmin.value) return true
-    return permissions.value.includes(perm)
-  }
-
-  function hasAnyPermission(...perms) {
-    if (isSuperAdmin.value) return true
-    return perms.some(p => permissions.value.includes(p))
-  }
-
-  function hasAllPermissions(...perms) {
-    if (isSuperAdmin.value) return true
-    return perms.every(p => permissions.value.includes(p))
-  }
-
-  function hasRole(role) {
-    if (isSuperAdmin.value) return true
-    return userInfo.value?.roles?.includes(role)
-  }
-
-  function logout() {
+  
+  const logout = () => {
     token.value = ''
-    userInfo.value = {}
-    permissions.value = []
-    localStorage.removeItem('admin_token')
-    localStorage.removeItem('admin_userInfo')
-    localStorage.removeItem('admin_permissions')
+    userInfo.value = null
+    localStorage.removeItem('token')
+    localStorage.removeItem('userInfo')
   }
-
+  
+  const fetchUserInfo = async () => {
+    try {
+      const data = await request.get('/user/info')
+      setUserInfo(data)
+      return data
+    } catch (e) {
+      console.error('获取用户信息失败', e)
+      return null
+    }
+  }
+  
   return {
-    // State
     token,
     userInfo,
-    permissions,
-    // Getters
-    isLoggedIn,
-    isSuperAdmin,
-    username,
-    // Actions
+    isLogin,
     setToken,
     setUserInfo,
-    setPermissions,
-    hasPermission,
-    hasAnyPermission,
-    hasAllPermissions,
-    hasRole,
-    logout
+    logout,
+    fetchUserInfo
   }
 })

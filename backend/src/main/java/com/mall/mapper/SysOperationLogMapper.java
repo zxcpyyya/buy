@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 /**
  * 操作日志Mapper
  *
- * @author mall
+ * @author xiu
  */
 @Mapper
 public interface SysOperationLogMapper extends BaseMapper<SysOperationLogDO> {

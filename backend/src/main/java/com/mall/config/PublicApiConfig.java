@@ -9,7 +9,7 @@ import java.util.Set;
  * 公开接口白名单配置
  * 定义哪些接口不需要登录即可访问
  *
- * @author mall
+ * @author xiu
  */
 @Configuration
 public class PublicApiConfig {

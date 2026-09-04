@@ -3,7 +3,7 @@ package com.mall.common.enums;
 /**
  * 角色类型枚举
  *
- * @author mall
+ * @author xiu
  */
 public enum RoleType {
 

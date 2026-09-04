@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * 积分服务接口
  *
- * @author mall
+ * @author xiu
  */
 public interface PointsService {
 

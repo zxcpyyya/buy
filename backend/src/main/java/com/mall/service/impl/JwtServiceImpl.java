@@ -18,7 +18,7 @@ import java.util.Date;
 /**
  * JWT Token服务实现类
  *
- * @author mall
+ * @author xiu
  */
 @Slf4j
 @Service

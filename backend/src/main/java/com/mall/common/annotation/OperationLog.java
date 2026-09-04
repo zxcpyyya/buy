@@ -6,7 +6,7 @@ import java.lang.annotation.*;
  * 操作日志注解
  * 标注在Controller方法上，自动记录操作日志
  *
- * @author mall
+ * @author xiu
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)

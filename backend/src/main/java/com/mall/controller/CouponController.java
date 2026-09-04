@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * 优惠券Controller
  *
- * @author mall
+ * @author xiu
  */
 @Slf4j
 @RestController

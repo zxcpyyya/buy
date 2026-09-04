@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * 后台认证Controller
  *
- * @author mall
+ * @author xiu
  */
 @RestController
 @RequestMapping("/api/admin/auth")

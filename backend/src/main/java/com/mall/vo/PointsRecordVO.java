@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 /**
  * 积分记录VO
  *
- * @author mall
+ * @author xiu
  */
 @Data
 public class PointsRecordVO implements Serializable {

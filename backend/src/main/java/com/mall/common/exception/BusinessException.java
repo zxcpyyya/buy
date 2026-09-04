@@ -1,66 +1,33 @@
 package com.mall.common.exception;
 
+import lombok.Getter;
+
 /**
- * 业务异常类
- * 
- * 
- * 1. 异常命名以Exception结尾
- * 2. 错误码采用5位字符串格式
- * 3. 继承RuntimeException
- * 
- * @author xiu
- * @date 2024/01/01
+ * 业务异常
+ *
+ * @author mall
  */
+@Getter
 public class BusinessException extends RuntimeException {
-    
-    /**
-     * 错误码
-     */
-    private final String errorCode;
-    
-    /**
-     * 错误信息
-     */
-    private final String errorMessage;
-    
-    /**
-     * 构造函数
-     *
-     * @param errorMessage 错误信息
-     */
-    public BusinessException(String errorMessage) {
-        super(errorMessage);
-        this.errorCode = "B0001";
-        this.errorMessage = errorMessage;
+
+    private final int code;
+    private final String message;
+
+    public BusinessException(int code, String message) {
+        super(message);
+        this.code = code;
+        this.message = message;
     }
-    
-    /**
-     * 构造函数
-     *
-     * @param errorCode 错误码
-     * @param errorMessage 错误信息
-     */
-    public BusinessException(String errorCode, String errorMessage) {
-        super(errorMessage);
-        this.errorCode = errorCode;
-        this.errorMessage = errorMessage;
+
+    public BusinessException(String message) {
+        this(400, message);
     }
-    
-    /**
-     * 获取错误码
-     *
-     * @return 错误码
-     */
-    public String getErrorCode() {
-        return errorCode;
+
+    public static BusinessException of(int code, String message) {
+        return new BusinessException(code, message);
     }
-    
-    /**
-     * 获取错误信息
-     *
-     * @return 错误信息
-     */
-    public String getErrorMessage() {
-        return errorMessage;
+
+    public static BusinessException of(String message) {
+        return new BusinessException(message);
     }
 }

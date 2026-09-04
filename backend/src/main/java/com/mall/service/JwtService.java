@@ -6,7 +6,7 @@ import com.mall.vo.AdminUserVO;
 /**
  * JWT Token服务接口
  *
- * @author mall
+ * @author xiu
  */
 public interface JwtService {
 

@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * 后台认证服务接口
  *
- * @author mall
+ * @author xiu
  */
 public interface AdminAuthService {
 
