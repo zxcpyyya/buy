@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 订单详情VO
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Data
@@ -109,4 +109,43 @@ public class OrderVO implements Serializable {
      * 创建时间
      */
     private LocalDateTime createTime;
+
+    // ========== 积分/优惠券相关 ==========
+
+    /**
+     * 使用积分
+     */
+    private Integer usePoints;
+
+    /**
+     * 积分抵扣金额
+     */
+    private BigDecimal pointsDiscount;
+
+    /**
+     * 使用的优惠券ID
+     */
+    private Long couponId;
+
+    /**
+     * 使用的优惠券名称
+     */
+    private String couponName;
+
+    /**
+     * 优惠券抵扣金额
+     */
+    private BigDecimal couponDiscount;
+
+    /**
+     * 获得积分
+     */
+    private Integer gotPoints;
+
+    // ========== 物流信息 ==========
+
+    /**
+     * 物流信息
+     */
+    private ExpressVO express;
 }

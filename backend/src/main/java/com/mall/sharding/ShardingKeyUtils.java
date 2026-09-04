@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
  * - ds = user_id % 2
  * - table = user_id % 2
  *
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j

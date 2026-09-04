@@ -20,9 +20,9 @@ import java.util.Map;
 /**
  * 用户Controller
  * 
- * 遵循RESTful API设计规范和阿里Java开发规约
  * 
- * @author mall
+ * 
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j

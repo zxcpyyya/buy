@@ -29,13 +29,13 @@ import java.util.Set;
  * 4. 支持分布式 - 多实例共享同一个Redis队列
  * 5. 高性能 - 基于Redis ZSet，时间复杂度O(logN)
  * 
- * 遵循阿里Java开发规范：
+ * 
  * 1. 使用ScheduledExecutorService
  * 2. @Transactional保证事务一致性
  * 3. 完善的日志记录
  * 4. 异常处理完善
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j
@@ -85,7 +85,7 @@ public class OrderDelayTask {
             // 1. 从Redis延迟队列获取到期的订单
             Set<Object> expiredOrderIds = delayQueue.getExpiredOrders();
             
-            // 2. 使用isEmpty()而非size()==0（阿里规范）
+            // 2. 使用isEmpty()而非size()==0
             if (CollectionUtils.isEmpty(expiredOrderIds)) {
                 return;
             }

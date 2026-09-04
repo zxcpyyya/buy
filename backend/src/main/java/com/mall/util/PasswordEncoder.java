@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 /**
  * 密码加密工具类
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Component

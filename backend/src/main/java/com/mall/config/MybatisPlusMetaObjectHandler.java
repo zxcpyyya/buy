@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
  * 注意：这里的 LocalDateTime.now() 必须由应用生成，
  * 不能依赖数据库的 CURRENT_TIMESTAMP（避免分片表时间不一致）
  *
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j

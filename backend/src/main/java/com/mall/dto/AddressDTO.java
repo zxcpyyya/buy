@@ -10,7 +10,7 @@ import java.io.Serializable;
 /**
  * 收货地址DTO
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Data

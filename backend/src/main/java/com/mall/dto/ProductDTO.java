@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 /**
  * 商品DTO
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Data

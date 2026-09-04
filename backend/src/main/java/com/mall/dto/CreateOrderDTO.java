@@ -10,7 +10,7 @@ import java.io.Serializable;
 /**
  * 创建订单请求DTO
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Data
@@ -40,4 +40,16 @@ public class CreateOrderDTO implements Serializable {
      * 购物车ID（从购物车下单时使用）
      */
     private Long cartId;
+
+    // ========== 优惠券/积分 ==========
+
+    /**
+     * 使用的优惠券ID（可选）
+     */
+    private Long couponId;
+
+    /**
+     * 使用积分抵扣（可选，默认0）
+     */
+    private Integer usePoints;
 }

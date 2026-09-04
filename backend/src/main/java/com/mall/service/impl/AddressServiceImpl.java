@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 /**
  * 收货地址Service实现类
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j
@@ -60,7 +60,7 @@ public class AddressServiceImpl implements AddressService {
             throw new BusinessException("A0401", "收货地址不存在");
         }
         
-        // 权限校验（阿里规范：水平权限校验）
+        // 权限校验（水平权限校验）
         if (!addressDO.getUserId().equals(userId)) {
             throw new BusinessException("A0301", "无权限访问该地址");
         }

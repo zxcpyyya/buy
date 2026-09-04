@@ -18,9 +18,9 @@ import java.util.List;
 /**
  * 收货地址Controller
  * 
- * 遵循RESTful API设计规范和阿里Java开发规约
  * 
- * @author mall
+ * 
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j

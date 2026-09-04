@@ -17,13 +17,13 @@ import java.util.stream.Collectors;
 /**
  * 全局异常处理器
  * 
- * 遵循阿里Java开发规范：
+ * 
  * 1. 统一异常处理
  * 2. 区分异常类型
  * 3. 日志记录完善
  * 4. 返回统一格式
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j

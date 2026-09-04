@@ -24,7 +24,7 @@ import java.util.Objects;
 /**
  * 用户Service实现类
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j
@@ -41,7 +41,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Long register(RegisterDTO registerDTO) {
-        // 1. 参数校验（阿里规范：预检查规避RuntimeException）
+        // 1. 参数校验（预检查规避RuntimeException）
         if (StringUtils.hasText(registerDTO.getUsername()) && registerDTO.getUsername().length() < 4) {
             throw new BusinessException("A0402", "用户名长度不能少于4位");
         }
@@ -54,7 +54,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
             throw new BusinessException("A0402", "两次密码输入不一致");
         }
         
-        // 2. 检查用户名是否已存在（阿里规范：使用确定有值的对象调用equals）
+        // 2. 检查用户名是否已存在（使用确定有值的对象调用equals）
         if ("0".equals(this.count(
             new LambdaQueryWrapper<UserDO>()
                 .eq(UserDO::getUsername, registerDTO.getUsername())
@@ -105,12 +105,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
             throw new BusinessException("A0202", "用户已被禁用");
         }
         
-        // 4. 验证密码（阿里规范：使用确定有值的对象调用equals）
+        // 4. 验证密码（使用确定有值的对象调用equals）
         if (!passwordEncoder.matches(loginDTO.getPassword(), userDO.getPassword())) {
             throw new BusinessException("A0210", "密码错误");
         }
         
-        // 5. 生成Token（阿里规范：使用占位符打印日志）
+        // 5. 生成Token（使用占位符打印日志）
         String token = jwtUtil.generateToken(userDO.getId(), userDO.getUsername());
         
         log.info("用户登录成功, username={}", loginDTO.getUsername());

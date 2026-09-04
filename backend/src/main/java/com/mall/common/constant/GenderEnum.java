@@ -3,7 +3,7 @@ package com.mall.common.constant;
 /**
  * 性别枚举
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 public enum GenderEnum {

@@ -21,11 +21,11 @@ import java.util.concurrent.TimeUnit;
  * - Value存储订单ID
  * - 定时检查并处理到期的订单
  * 
- * 遵循阿里Java开发规范：
+ * 
  * 1. 使用SLF4J日志框架
  * 2. 完善的异常处理
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j

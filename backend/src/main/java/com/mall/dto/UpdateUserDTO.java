@@ -8,7 +8,7 @@ import java.io.Serializable;
 /**
  * 更新用户信息DTO
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Data

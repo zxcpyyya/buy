@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * 商城系统启动类
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @SpringBootApplication

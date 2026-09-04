@@ -9,7 +9,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 /**
  * Web MVC配置类
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Configuration

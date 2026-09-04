@@ -16,10 +16,10 @@ import org.apache.shardingsphere.infra.hint.HintManagerFactory;
  * 2. 订单导出功能
  * 3. 数据迁移脚本
  *
- * 阿里规范：
+ * 
  * 使用 try-with-resources 确保 Hint 资源及时释放
  *
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j

@@ -15,12 +15,12 @@ import java.util.Map;
 /**
  * JWT工具类
  * 
- * 遵循阿里Java开发规范：
+ * 
  * 1. 使用SLF4J日志框架
  * 2. 异常处理完善
  * 3. 常量不出现魔法值
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j

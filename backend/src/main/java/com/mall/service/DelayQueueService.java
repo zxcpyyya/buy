@@ -5,7 +5,7 @@ package com.mall.service;
  * 
  * 用于处理订单超时等延迟任务，避免轮询数据库
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 public interface DelayQueueService {

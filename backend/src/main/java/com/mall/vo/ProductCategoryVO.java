@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * 商品分类VO
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Data

@@ -8,7 +8,7 @@ import java.io.Serializable;
 /**
  * 统一响应结果封装类
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Data

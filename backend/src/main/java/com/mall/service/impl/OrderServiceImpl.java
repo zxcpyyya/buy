@@ -11,6 +11,9 @@ import com.mall.entity.*;
 import com.mall.mapper.*;
 import com.mall.service.OrderService;
 import com.mall.service.ProductService;
+import com.mall.service.CouponService;
+import com.mall.service.PointsService;
+import com.mall.service.ExpressService;
 import com.mall.sharding.ShardingHintUtils;
 import com.mall.sharding.ShardingKeyUtils;
 import com.mall.vo.OrderItemVO;
@@ -32,7 +35,7 @@ import java.util.stream.Collectors;
 /**
  * 订单Service实现类
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j
@@ -47,11 +50,14 @@ public class OrderServiceImpl implements OrderService {
     private final ProductMapper productMapper;
     private final AddressMapper addressMapper;
     private final ProductService productService;
+    private final CouponService couponService;
+    private final PointsService pointsService;
+    private final ExpressService expressService;
     
     /**
      * 创建订单
      * 
-     * 遵循阿里Java开发规范：
+     * 
      * 1. 使用@Transactional保证事务一致性
      * 2. 防止并发超卖问题
      * 3. 完善的异常处理
@@ -59,13 +65,13 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public OrderVO createOrder(CreateOrderDTO createOrderDTO, Long userId) {
-        // 1. 校验收货地址（阿里规范：NPE防护）
+        // 1. 校验收货地址（NPE防护）
         AddressDO address = addressMapper.selectById(createOrderDTO.getAddressId());
         if (Objects.isNull(address) || !address.getUserId().equals(userId)) {
             throw new BusinessException("A0401", "收货地址不存在或无权限");
         }
         
-        // 2. 获取购物车商品（阿里规范：集合处理使用isEmpty()判断）
+        // 2. 获取购物车商品（集合处理使用isEmpty()判断）
         List<CartItemDO> cartItems = cartItemMapper.selectList(
             new LambdaQueryWrapper<CartItemDO>()
                 .eq(CartItemDO::getCartId, createOrderDTO.getCartId())
@@ -75,31 +81,68 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException("A0401", "购物车为空");
         }
         
-        // 3. 计算订单金额（阿里规范：货币金额使用BigDecimal）
+        // 3. 计算订单金额（货币金额使用BigDecimal）
         BigDecimal totalPrice = BigDecimal.ZERO;
         for (CartItemDO item : cartItems) {
             BigDecimal subtotal = item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
             totalPrice = totalPrice.add(subtotal);
         }
-        
-        // 4. 生成订单号（阿里规范：唯一性保证）
+
+        // 4. 计算优惠（积分和优惠券）
+        BigDecimal couponDiscount = BigDecimal.ZERO;
+        BigDecimal pointsDiscount = BigDecimal.ZERO;
+        String couponName = null;
+
+        // 4.1 处理优惠券
+        if (createOrderDTO.getCouponId() != null) {
+            couponDiscount = couponService.calculateDiscount(
+                    createOrderDTO.getCouponId(), totalPrice);
+            if (couponDiscount.compareTo(BigDecimal.ZERO) > 0) {
+                couponName = "优惠券";
+            }
+        }
+
+        // 4.2 处理积分抵扣
+        Integer usePoints = createOrderDTO.getUsePoints();
+        if (usePoints != null && usePoints > 0) {
+            Integer userPoints = pointsService.getUserPoints(userId);
+            if (userPoints >= usePoints) {
+                // 积分抵扣比例：100积分 = 1元
+                pointsDiscount = BigDecimal.valueOf(usePoints).divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
+            }
+        }
+
+        // 4.3 计算实付金额
+        BigDecimal payPrice = totalPrice.subtract(couponDiscount).subtract(pointsDiscount);
+        if (payPrice.compareTo(BigDecimal.ZERO) < 0) {
+            payPrice = BigDecimal.ZERO;
+        }
+
+        // 5. 生成订单号（唯一性保证）
         String orderNo = IdUtil.getSnowflakeNextIdStr();
-        
-        // 5. 创建订单记录
+
+        // 6. 创建订单记录
         OrderInfoDO orderInfoDO = new OrderInfoDO();
         orderInfoDO.setOrderNo(orderNo);
         orderInfoDO.setUserId(userId);
         orderInfoDO.setTotalPrice(totalPrice);
-        orderInfoDO.setPayPrice(totalPrice); // 实付金额（简化处理）
+        orderInfoDO.setPayPrice(payPrice); // 实付金额
         orderInfoDO.setPayType(createOrderDTO.getPayType());
         orderInfoDO.setOrderStatus(1); // 待支付
         orderInfoDO.setDeliveryStatus(0); // 未发货
         orderInfoDO.setReceiverName(address.getConsignee());
         orderInfoDO.setReceiverPhone(address.getPhone());
-        orderInfoDO.setReceiverAddress(address.getProvince() + address.getCity() + 
+        orderInfoDO.setReceiverAddress(address.getProvince() + address.getCity() +
             address.getDistrict() + address.getDetailAddress());
         orderInfoDO.setRemark(createOrderDTO.getRemark());
-        
+
+        // 积分和优惠券信息
+        orderInfoDO.setCouponId(createOrderDTO.getCouponId());
+        orderInfoDO.setCouponName(couponName);
+        orderInfoDO.setCouponDiscount(couponDiscount);
+        orderInfoDO.setUsePoints(usePoints != null ? usePoints : 0);
+        orderInfoDO.setPointsDiscount(pointsDiscount);
+
         orderInfoMapper.insert(orderInfoDO);
         
         // 6. 创建订单商品项记录
@@ -112,7 +155,7 @@ public class OrderServiceImpl implements OrderService {
                 continue;
             }
             
-            // 扣减库存（阿里规范：并发场景下需要考虑库存问题）
+            // 扣减库存（并发场景下需要考虑库存问题）
             if (product.getStock() < cartItem.getQuantity()) {
                 throw new BusinessException("A0401", "商品【" + product.getName() + "】库存不足");
             }
@@ -257,7 +300,7 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException("A0401", "订单不存在");
         }
 
-        // 权限校验（阿里规范：水平权限校验）
+        // 权限校验（水平权限校验）
         if (!orderInfoDO.getUserId().equals(userId)) {
             throw new BusinessException("A0301", "无权限访问该订单");
         }
@@ -272,22 +315,33 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Boolean cancelOrder(Long orderId, Long userId) {
         OrderInfoDO orderInfoDO = this.getOrderById(orderId, userId);
-        
+
         // 只有待支付状态可以取消
         if (orderInfoDO.getOrderStatus() != 1) {
             throw new BusinessException("A0440", "当前状态无法取消订单");
         }
-        
+
+        // 退还优惠券
+        if (orderInfoDO.getCouponId() != null) {
+            couponService.returnCoupon(orderInfoDO.getCouponId(), userId);
+        }
+
+        // 退还积分
+        if (orderInfoDO.getUsePoints() != null && orderInfoDO.getUsePoints() > 0) {
+            pointsService.addPoints(userId, orderInfoDO.getUsePoints(), 2,
+                    "订单 " + orderInfoDO.getOrderNo() + " 取消退还积分");
+        }
+
         // 恢复库存
         List<OrderItemDO> orderItems = orderItemMapper.selectList(
             new LambdaQueryWrapper<OrderItemDO>()
                 .eq(OrderItemDO::getOrderId, orderId)
         );
-        
+
         for (OrderItemDO item : orderItems) {
             // 恢复库存
             productService.updateStock(item.getProductId(), item.getQuantity());
-            
+
             // 减少销量
             ProductDO product = productMapper.selectById(item.getProductId());
             if (Objects.nonNull(product)) {
@@ -297,12 +351,12 @@ public class OrderServiceImpl implements OrderService {
                 productMapper.update(null, wrapper);
             }
         }
-        
+
         // 更新订单状态
         LambdaUpdateWrapper<OrderInfoDO> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(OrderInfoDO::getId, orderId)
             .set(OrderInfoDO::getOrderStatus, 5); // 已取消
-        
+
         return orderInfoMapper.update(null, wrapper) > 0;
     }
     
@@ -313,17 +367,17 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Boolean confirmReceive(Long orderId, Long userId) {
         OrderInfoDO orderInfoDO = this.getOrderById(orderId, userId);
-        
+
         // 只有已发货状态可以确认收货
         if (orderInfoDO.getOrderStatus() != 3) {
             throw new BusinessException("A0440", "当前状态无法确认收货");
         }
-        
+
         LambdaUpdateWrapper<OrderInfoDO> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(OrderInfoDO::getId, orderId)
             .set(OrderInfoDO::getOrderStatus, 4) // 已完成
             .set(OrderInfoDO::getReceiveTime, LocalDateTime.now());
-        
+
         return orderInfoMapper.update(null, wrapper) > 0;
     }
     
@@ -357,20 +411,41 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Boolean payOrder(Long orderId, Long userId) {
         OrderInfoDO orderInfoDO = this.getOrderById(orderId, userId);
-        
+
         // 只有待支付状态可以支付
         if (orderInfoDO.getOrderStatus() != 1) {
             throw new BusinessException("A0440", "当前状态无法支付");
         }
-        
+
         LambdaUpdateWrapper<OrderInfoDO> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(OrderInfoDO::getId, orderId)
             .set(OrderInfoDO::getOrderStatus, 2) // 已支付
             .set(OrderInfoDO::getPayTime, LocalDateTime.now());
-        
-        log.info("订单支付成功, orderId={}, orderNo={}, userId={}", 
+
+        log.info("订单支付成功, orderId={}, orderNo={}, userId={}",
             orderId, orderInfoDO.getOrderNo(), userId);
-        
+
+        // 5. 处理积分和优惠券
+        // 5.1 使用优惠券
+        if (orderInfoDO.getCouponId() != null) {
+            couponService.useCoupon(orderInfoDO.getCouponId(), orderId, userId);
+        }
+
+        // 5.2 使用积分
+        if (orderInfoDO.getUsePoints() != null && orderInfoDO.getUsePoints() > 0) {
+            pointsService.usePoints(userId, orderInfoDO.getUsePoints(), orderId,
+                    "订单 " + orderInfoDO.getOrderNo() + " 使用积分");
+        }
+
+        // 5.3 发放积分（每消费1元送1积分）
+        int gotPoints = orderInfoDO.getPayPrice().intValue();
+        if (gotPoints > 0) {
+            pointsService.addPoints(userId, gotPoints, 1, orderId,
+                    "订单 " + orderInfoDO.getOrderNo() + " 获得积分");
+            // 更新订单获得的积分
+            orderInfoDO.setGotPoints(gotPoints);
+        }
+
         return orderInfoMapper.update(null, wrapper) > 0;
     }
     
@@ -380,15 +455,25 @@ public class OrderServiceImpl implements OrderService {
     private OrderVO convertToVO(OrderInfoDO orderInfoDO, List<OrderItemVO> items) {
         OrderVO orderVO = BeanUtil.copyProperties(orderInfoDO, OrderVO.class);
         orderVO.setItems(items);
-        
+
         // 设置支付方式名称
         if (orderInfoDO.getPayType() != null) {
             orderVO.setPayTypeName(orderInfoDO.getPayType() == 1 ? "微信支付" : "支付宝");
         }
-        
+
         // 设置订单状态名称
         orderVO.setOrderStatusName(this.getOrderStatusName(orderInfoDO.getOrderStatus()));
-        
+
+        // 获取物流信息（如果订单已发货或已完成）
+        if (orderInfoDO.getOrderStatus() >= 3) {
+            try {
+                var expressVO = expressService.getOrderExpress(orderInfoDO.getId(), orderInfoDO.getUserId());
+                orderVO.setExpress(expressVO);
+            } catch (Exception e) {
+                log.debug("获取物流信息失败, orderId={}", orderInfoDO.getId());
+            }
+        }
+
         return orderVO;
     }
     

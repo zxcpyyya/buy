@@ -9,12 +9,12 @@ import java.util.Base64;
 /**
  * 密码加密工具类
  * 
- * 遵循阿里Java开发规范：
+ * 
  * 1. 使用盐值加密防止彩虹表攻击
  * 2. 使用SHA-256哈希算法
  * 3. 安全随机数生成器
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 public class PasswordEncoderUtil {

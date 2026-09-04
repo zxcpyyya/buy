@@ -26,13 +26,13 @@ import java.util.Objects;
  * - 定时检查30分钟未支付的订单并自动关闭
  * - 恢复已关闭订单的库存
  * 
- * 遵循阿里Java开发规范：
+ * 
  * 1. 使用ScheduledExecutorService（通过@EnableScheduling实现）
  * 2. 使用@Transactional保证事务一致性
  * 3. 完善的日志记录
  * 4. 并发安全处理
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j
@@ -70,7 +70,7 @@ public class OrderTask {
      * 
      * 执行频率：每5分钟执行一次
      * 
-     * 遵循阿里Java开发规范：
+     * 
      * 1. 使用占位符日志打印
      * 2. 事务保证数据一致性
      * 3. 异常处理完善
@@ -93,7 +93,7 @@ public class OrderTask {
             
             List<OrderInfoDO> unpaidOrders = orderInfoMapper.selectList(wrapper);
             
-            // 使用isEmpty()而非size()==0（阿里规范）
+            // 使用isEmpty()而非size()==0
             if (CollectionUtils.isEmpty(unpaidOrders)) {
                 log.debug("没有需要关闭的未支付订单");
                 return;
@@ -145,7 +145,7 @@ public class OrderTask {
             // 恢复库存
             productService.updateStock(item.getProductId(), item.getQuantity());
             
-            // 减少销量（阿里规范：库存使用Integer）
+            // 减少销量（库存使用Integer）
             var product = productMapper.selectById(item.getProductId());
             if (Objects.nonNull(product)) {
                 LambdaUpdateWrapper<com.mall.entity.ProductDO> wrapper = new LambdaUpdateWrapper<>();

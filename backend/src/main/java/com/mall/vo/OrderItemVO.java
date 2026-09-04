@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 /**
  * 订单商品项VO
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Data

@@ -14,11 +14,11 @@ import java.util.List;
 /**
  * 商品分类Controller
  * 
- * 遵循阿里Java开发规范：
+ * 
  * 1. RESTful风格设计
  * 2. 统一响应封装
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j

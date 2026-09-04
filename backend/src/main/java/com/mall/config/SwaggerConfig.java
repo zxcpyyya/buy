@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Swagger配置类
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Configuration

@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 /**
  * 商品Service实现类
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j
@@ -279,7 +279,7 @@ public class ProductServiceImpl implements ProductService {
             throw new BusinessException("A0401", "商品不存在");
         }
         
-        // 计算新库存（阿里规范：货币金额使用BigDecimal，但库存使用Integer）
+        // 计算新库存（货币金额使用BigDecimal，但库存使用Integer）
         int newStock = productDO.getStock() + quantity;
         if (newStock < 0) {
             throw new BusinessException("A0401", "库存不足");

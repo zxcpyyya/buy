@@ -16,11 +16,11 @@ import org.springframework.stereotype.Component;
  * - 当订单创建成功后，自动将订单加入延迟队列
  * - 订单支付后，从延迟队列中移除
  * 
- * 遵循阿里Java开发规范：
+ * 
  * 1. AOP应谨慎使用，此处用于解耦订单创建和延迟队列逻辑
  * 2. 完善的异常处理
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j

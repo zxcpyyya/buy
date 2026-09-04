@@ -9,7 +9,7 @@ import org.springframework.web.filter.CorsFilter;
 /**
  * 跨域配置类
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Configuration

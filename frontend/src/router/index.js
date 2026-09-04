@@ -62,6 +62,24 @@ const routes = [
     meta: { title: '个人中心', requireAuth: true }
   },
   {
+    path: '/coupons',
+    name: 'Coupons',
+    component: () => import('@/views/Coupons.vue'),
+    meta: { title: '我的优惠券', requireAuth: true }
+  },
+  {
+    path: '/points',
+    name: 'Points',
+    component: () => import('@/views/Points.vue'),
+    meta: { title: '我的积分', requireAuth: true }
+  },
+  {
+    path: '/express/:orderId',
+    name: 'ExpressTrack',
+    component: () => import('@/views/ExpressTrack.vue'),
+    meta: { title: '物流跟踪', requireAuth: true }
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/Login.vue'),

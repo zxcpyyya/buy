@@ -21,12 +21,12 @@ import java.util.Objects;
 /**
  * 用户认证拦截器
  * 
- * 遵循阿里Java开发规范：
+ * 
  * 1. 使用SLF4J日志框架
  * 2. 异常处理完善
  * 3. JWT Token验证
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j
@@ -107,7 +107,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             return false;
         }
         
-        // 设置用户上下文（阿里规范：ThreadLocal使用后必须清理）
+        // 设置用户上下文（ThreadLocal使用后必须清理）
         UserContext.UserInfo userInfo = new UserContext.UserInfo();
         userInfo.setUserId(userId);
         userInfo.setUsername(username);
@@ -124,7 +124,7 @@ public class AuthInterceptor implements HandlerInterceptor {
      */
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
-        // 清理ThreadLocal（阿里规范：ThreadLocal必须清理）
+        // 清理ThreadLocal（ThreadLocal必须清理）
         UserContext.clear();
     }
     

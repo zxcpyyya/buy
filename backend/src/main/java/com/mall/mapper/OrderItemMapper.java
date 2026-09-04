@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 /**
  * 订单商品项Mapper接口
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Mapper

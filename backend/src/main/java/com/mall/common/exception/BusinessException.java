@@ -3,12 +3,12 @@ package com.mall.common.exception;
 /**
  * 业务异常类
  * 
- * 遵循阿里Java开发规范：
+ * 
  * 1. 异常命名以Exception结尾
  * 2. 错误码采用5位字符串格式
  * 3. 继承RuntimeException
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 public class BusinessException extends RuntimeException {

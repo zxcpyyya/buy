@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * 配置说明见 application-sharding.yml
  *
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Configuration

@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 /**
  * 订单表实体类
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Data
@@ -84,7 +84,39 @@ public class OrderInfoDO implements Serializable {
      * 备注
      */
     private String remark;
-    
+
+    // ========== 积分/优惠券 ==========
+
+    /**
+     * 使用积分数量
+     */
+    private Integer usePoints;
+
+    /**
+     * 积分抵扣金额
+     */
+    private BigDecimal pointsDiscount;
+
+    /**
+     * 使用的优惠券ID
+     */
+    private Long couponId;
+
+    /**
+     * 优惠券名称
+     */
+    private String couponName;
+
+    /**
+     * 优惠券抵扣金额
+     */
+    private BigDecimal couponDiscount;
+
+    /**
+     * 获得积分数量
+     */
+    private Integer gotPoints;
+
     /**
      * 支付时间
      */

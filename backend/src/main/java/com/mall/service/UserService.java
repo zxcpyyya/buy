@@ -3,7 +3,7 @@ package com.mall.service;
 /**
  * 用户Service接口
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 public interface UserService {

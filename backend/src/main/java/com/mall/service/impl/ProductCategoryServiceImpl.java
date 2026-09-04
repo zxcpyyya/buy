@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 /**
  * 商品分类Service实现类
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j
@@ -43,7 +43,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
                 .orderByAsc(ProductCategoryDO::getSort)
         );
         
-        // 使用isEmpty()而非size()==0（阿里规范）
+        // 使用isEmpty()而非size()==0
         if (CollectionUtils.isEmpty(allCategories)) {
             return new ArrayList<>();
         }

@@ -47,6 +47,29 @@
           <h3>收货地址</h3>
           <p>管理收货地址</p>
         </router-link>
+
+        <router-link to="/coupons" class="menu-card">
+          <div class="menu-icon">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="4" y="8" width="24" height="16" rx="2"/>
+              <path d="M4 12h24"/>
+              <path d="M12 8V6a4 4 0 018 0v2"/>
+            </svg>
+          </div>
+          <h3>优惠券</h3>
+          <p>查看我的优惠券</p>
+        </router-link>
+
+        <router-link to="/points" class="menu-card">
+          <div class="menu-icon">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="16" cy="16" r="12"/>
+              <path d="M16 8v8l4 4"/>
+            </svg>
+          </div>
+          <h3>我的积分</h3>
+          <p>积分余额 {{ pointsBalance }}</p>
+        </router-link>
         
         <div class="menu-card" @click="changePassword">
           <div class="menu-icon">
@@ -165,6 +188,7 @@ const cartStore = useCartStore()
 
 const userInfo = computed(() => userStore.userInfo || {})
 const cartCount = computed(() => cartStore.totalCount)
+const pointsBalance = ref(0)
 
 const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iI2Y1ZjVmNyIvPjwvc3ZnPg=='
 
@@ -260,9 +284,19 @@ const handleLogout = async () => {
   setTimeout(() => router.push('/login'), 600)
 }
 
+const fetchPointsBalance = async () => {
+  try {
+    const data = await request.get('/points')
+    pointsBalance.value = data?.balance || 0
+  } catch (e) {
+    console.error('获取积分失败', e)
+  }
+}
+
 onMounted(async () => {
   await userStore.fetchUserInfo()
   cartStore.fetchCartCount()
+  fetchPointsBalance()
 })
 </script>
 

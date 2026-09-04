@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 /**
  * 用户信息VO
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Data

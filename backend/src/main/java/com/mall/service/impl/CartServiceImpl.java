@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 /**
  * 购物车Service实现类
  * 
- * @author mall
+ * @author xiu
  * @date 2024/01/01
  */
 @Slf4j
@@ -215,7 +215,7 @@ public class CartServiceImpl implements CartService {
         
         List<CartItemDO> items = cartItemMapper.selectList(wrapper);
         
-        // 使用isEmpty()而非size()==0（阿里规范）
+        // 使用isEmpty()而非size()==0
         if (CollectionUtils.isEmpty(items)) {
             return 0;
         }
