@@ -114,8 +114,8 @@
             <div v-if="loading" class="chart-loading">
               <div class="loading"></div>
             </div>
-            <div v-else class="chart-placeholder">
-              <svg class="chart-svg" viewBox="0 0 800 300" preserveAspectRatio="none">
+            <div v-else class="chart-wrapper">
+              <svg class="chart-svg" viewBox="0 0 800 300" preserveAspectRatio="none" v-if="salesTrendData.length > 0">
                 <!-- 渐变填充 -->
                 <defs>
                   <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -124,40 +124,39 @@
                   </linearGradient>
                 </defs>
                 <!-- 网格线 -->
-                <line x1="0" y1="75" x2="800" y2="75" stroke="#E5E5EA" stroke-width="1"/>
-                <line x1="0" y1="150" x2="800" y2="150" stroke="#E5E5EA" stroke-width="1"/>
-                <line x1="0" y1="225" x2="800" y2="225" stroke="#E5E5EA" stroke-width="1"/>
+                <line x1="0" y1="75" x2="800" y2="75" stroke="#E5E5EA" stroke-width="1" stroke-dasharray="4"/>
+                <line x1="0" y1="150" x2="800" y2="150" stroke="#E5E5EA" stroke-width="1" stroke-dasharray="4"/>
+                <line x1="0" y1="225" x2="800" y2="225" stroke="#E5E5EA" stroke-width="1" stroke-dasharray="4"/>
                 <!-- 数据线 -->
                 <path
-                  d="M 0 250 Q 50 240 100 220 T 200 180 T 300 150 T 400 120 T 500 90 T 600 70 T 700 50 T 800 30"
+                  :d="chartPath"
                   fill="none"
                   stroke="#0071E3"
                   stroke-width="3"
                   stroke-linecap="round"
+                  stroke-linejoin="round"
                 />
                 <!-- 填充区域 -->
                 <path
-                  d="M 0 250 Q 50 240 100 220 T 200 180 T 300 150 T 400 120 T 500 90 T 600 70 T 700 50 T 800 30 L 800 300 L 0 300 Z"
+                  :d="chartAreaPath"
                   fill="url(#chartGradient)"
                 />
                 <!-- 数据点 -->
-                <circle cx="100" cy="220" r="5" fill="#0071E3"/>
-                <circle cx="200" cy="180" r="5" fill="#0071E3"/>
-                <circle cx="300" cy="150" r="5" fill="#0071E3"/>
-                <circle cx="400" cy="120" r="5" fill="#0071E3"/>
-                <circle cx="500" cy="90" r="5" fill="#0071E3"/>
-                <circle cx="600" cy="70" r="5" fill="#0071E3"/>
-                <circle cx="700" cy="50" r="5" fill="#0071E3"/>
-                <circle cx="800" cy="30" r="5" fill="#0071E3"/>
+                <circle
+                  v-for="(point, index) in chartPoints"
+                  :key="index"
+                  :cx="point.x"
+                  :cy="point.y"
+                  r="5"
+                  fill="#0071E3"
+                  class="chart-dot"
+                />
               </svg>
-              <div class="chart-labels">
-                <span>周一</span>
-                <span>周二</span>
-                <span>周三</span>
-                <span>周四</span>
-                <span>周五</span>
-                <span>周六</span>
-                <span>周日</span>
+              <div v-if="salesTrendData.length === 0" class="chart-empty">
+                <p>暂无数据</p>
+              </div>
+              <div class="chart-labels" v-if="salesTrendData.length > 0">
+                <span v-for="(item, index) in chartLabels" :key="index">{{ item }}</span>
               </div>
             </div>
           </div>
@@ -333,8 +332,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import request from '@/utils/request'
 
 const router = useRouter()
 
@@ -355,26 +355,29 @@ const selectedPeriod = ref('week')
 
 // 统计数据
 const stats = reactive({
-  todayOrders: 156,
-  totalSales: 45680,
-  newUsers: 42,
-  lowStockProducts: 8,
-  orderGrowth: 12.5,
-  salesGrowth: 8.3,
-  userGrowth: 15.2,
-  stockWarning: 3
+  todayOrders: 0,
+  totalSales: 0,
+  newUsers: 0,
+  lowStockProducts: 0,
+  orderGrowth: 0,
+  salesGrowth: 0,
+  userGrowth: 0,
+  stockWarning: 0
 })
+
+// 销售趋势数据
+const salesTrendData = ref([])
 
 // 订单状态统计
 const orderStats = reactive({
-  pending: 23,
-  processing: 45,
-  shipped: 67,
-  completed: 234,
-  cancelled: 12
+  pending: 0,
+  processing: 0,
+  shipped: 0,
+  completed: 0,
+  cancelled: 0
 })
 
-// 待办事项
+// 待办事项（保留为本地数据，因为这个功能需要额外实现）
 const todos = ref([
   { id: 1, text: '审核新商家入驻申请', time: '2小时后', priority: 'high', priorityText: '紧急', completed: false },
   { id: 2, text: '处理积压订单 (15笔)', time: '今天内', priority: 'high', priorityText: '紧急', completed: false },
@@ -384,17 +387,17 @@ const todos = ref([
 ])
 
 // 最新订单
-const recentOrders = ref([
-  { id: '20240904001', user: '张*明', amount: '299.00', status: 'pending', statusText: '待支付' },
-  { id: '20240904002', user: '李*华', amount: '1,299.00', status: 'processing', statusText: '处理中' },
-  { id: '20240904003', user: '王*丽', amount: '599.00', status: 'shipped', statusText: '已发货' },
-  { id: '20240904004', user: '赵*强', amount: '2,899.00', status: 'completed', statusText: '已完成' },
-  { id: '20240904005', user: '刘*芳', amount: '129.00', status: 'completed', statusText: '已完成' }
-])
+const recentOrders = ref([])
 
 // 方法
 const formatNumber = (num) => {
-  return num.toLocaleString('zh-CN')
+  if (num == null) return '0'
+  return Number(num).toLocaleString('zh-CN')
+}
+
+const formatPrice = (num) => {
+  if (num == null) return '0.00'
+  return Number(num).toFixed(2)
 }
 
 const getPercentage = (value) => {
@@ -408,12 +411,137 @@ const goToUsers = () => router.push('/admin/user-list')
 const goToCoupons = () => router.push('/admin/coupon-list')
 const goToAddProduct = () => router.push('/admin/product-add')
 
-onMounted(() => {
-  // 模拟加载数据
+// 获取概览数据
+const fetchOverview = async () => {
+  try {
+    const res = await request.get('/admin/dashboard/overview')
+    if (res) {
+      stats.todayOrders = res.todayOrders || 0
+      stats.totalSales = res.todaySales || 0
+      stats.newUsers = res.newUsers || 0
+      stats.lowStockProducts = res.lowStockProducts || 0
+      stats.orderGrowth = res.orderGrowth || 0
+      stats.salesGrowth = res.salesGrowth || 0
+      stats.userGrowth = res.userGrowth || 0
+      stats.stockWarning = res.lowStockProducts || 0
+    }
+  } catch (e) {
+    console.error('获取概览失败', e)
+  }
+}
+
+// 获取销售趋势
+const fetchSalesTrend = async () => {
+  try {
+    const res = await request.get(`/admin/dashboard/sales-trend?period=${selectedPeriod.value}`)
+    if (res && res.trendData) {
+      salesTrendData.value = res.trendData
+    }
+  } catch (e) {
+    console.error('获取销售趋势失败', e)
+  }
+}
+
+// 获取订单状态统计
+const fetchOrderStatus = async () => {
+  try {
+    const res = await request.get('/admin/dashboard/order-status')
+    if (res) {
+      orderStats.pending = res.pending || 0
+      orderStats.processing = res.processing || 0
+      orderStats.shipped = res.shipped || 0
+      orderStats.completed = res.completed || 0
+      orderStats.cancelled = res.cancelled || 0
+    }
+  } catch (e) {
+    console.error('获取订单状态失败', e)
+  }
+}
+
+// 获取最新订单
+const fetchRecentOrders = async () => {
+  try {
+    const res = await request.get('/admin/dashboard/recent-orders')
+    if (res && Array.isArray(res)) {
+      recentOrders.value = res.slice(0, 5).map(order => ({
+        id: order.orderNo || order.id,
+        user: order.userNickname || '匿名用户',
+        amount: formatPrice(order.payPrice),
+        status: getStatusClass(order.orderStatus),
+        statusText: order.orderStatusName || getStatusText(order.orderStatus)
+      }))
+    }
+  } catch (e) {
+    console.error('获取最新订单失败', e)
+  }
+}
+
+const getStatusClass = (status) => {
+  const map = { 1: 'pending', 2: 'processing', 3: 'shipped', 4: 'completed', 5: 'cancelled' }
+  return map[status] || 'pending'
+}
+
+const getStatusText = (status) => {
+  const map = { 1: '待支付', 2: '处理中', 3: '已发货', 4: '已完成', 5: '已取消' }
+  return map[status] || '未知'
+}
+
+// 计算图表路径
+const chartPoints = computed(() => {
+  if (!salesTrendData.value || salesTrendData.value.length === 0) return []
+  
+  const data = salesTrendData.value
+  const maxSales = Math.max(...data.map(d => Number(d.sales) || 0), 1)
+  const width = 800
+  const height = 300
+  const padding = 40
+  const chartWidth = width - padding * 2
+  const chartHeight = height - padding * 2
+  
+  return data.map((item, index) => {
+    const x = padding + (index / (data.length - 1 || 1)) * chartWidth
+    const y = padding + chartHeight - (Number(item.sales) / maxSales) * chartHeight
+    return { x, y }
+  })
+})
+
+const chartPath = computed(() => {
+  const points = chartPoints.value
+  if (points.length === 0) return ''
+  
+  return points.map((p, i) => `${i === 0 ? 'M' : 'T'} ${p.x} ${p.y}`).join(' ')
+})
+
+const chartAreaPath = computed(() => {
+  const points = chartPoints.value
+  if (points.length === 0) return ''
+  
+  const width = 800
+  const height = 300
+  const padding = 40
+  
+  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'T'} ${p.x} ${p.y}`).join(' ')
+  return `${linePath} L ${width - padding} ${height - padding} L ${padding} ${height - padding} Z`
+})
+
+const chartLabels = computed(() => {
+  return salesTrendData.value.map(item => item.date)
+})
+
+// 监听周期切换
+watch(selectedPeriod, () => {
+  fetchSalesTrend()
+})
+
+onMounted(async () => {
   loading.value = true
-  setTimeout(() => {
-    loading.value = false
-  }, 500)
+  await Promise.all([
+    fetchOverview(),
+    fetchOrderStatus(),
+    fetchRecentOrders(),
+    fetchSalesTrend()
+  ])
+  loading.value = false
 })
 </script>
 
@@ -592,9 +720,32 @@ onMounted(() => {
   flex-direction: column;
 }
 
+.chart-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .chart-svg {
   flex: 1;
   width: 100%;
+}
+
+.chart-dot {
+  transition: all 0.2s;
+}
+
+.chart-dot:hover {
+  r: 7;
+  filter: drop-shadow(0 0 4px rgba(0, 113, 227, 0.5));
+}
+
+.chart-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
 }
 
 .chart-labels {

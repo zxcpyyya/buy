@@ -107,6 +107,17 @@ public class ProductServiceImpl implements ProductService {
             throw new BusinessException("A0401", "商品已下架");
         }
         
+        // 获取当前用户ID，添加浏览历史
+        try {
+            Long userId = com.mall.context.UserContext.getUserId();
+            if (userId != null) {
+                historyService.addBrowseHistory(userId, productId);
+            }
+        } catch (Exception e) {
+            // 非登录用户不记录浏览历史
+            log.debug("添加浏览历史失败（非登录用户）");
+        }
+        
         return this.convertToVO(productDO);
     }
     

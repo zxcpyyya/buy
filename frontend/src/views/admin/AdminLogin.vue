@@ -1,95 +1,151 @@
 <template>
-  <div class="login-page">
-    <div class="login-container">
-      <!-- Logo区域 -->
-      <div class="login-header">
-        <div class="login-logo">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-            <rect width="48" height="48" rx="12" fill="url(#gradient)"/>
-            <path d="M14 24C14 18.477 18.477 14 24 14V14C29.523 14 34 18.477 34 24V34H14V24Z" fill="white" fill-opacity="0.9"/>
-            <circle cx="24" cy="24" r="4" fill="#0071E3"/>
-            <defs>
-              <linearGradient id="gradient" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#5AC8FA"/>
-                <stop offset="1" stop-color="#0071E3"/>
-              </linearGradient>
-            </defs>
+  <div class="login-wrapper">
+    <!-- 左侧装饰区域 -->
+    <div class="login-left">
+      <div class="brand-content">
+        <div class="brand-logo">
+          <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+            <rect width="56" height="56" rx="14" fill="white" fill-opacity="0.15"/>
+            <path d="M28 12C20.268 12 14 18.268 14 26C14 31.5 17.2 36.3 22 38.6V44H34V38.6C38.8 36.3 42 31.5 42 26C42 18.268 35.732 12 28 12Z" fill="white"/>
+            <circle cx="28" cy="26" r="4" fill="#5AC8FA"/>
           </svg>
         </div>
-        <h1 class="login-title">商城管理系统</h1>
-        <p class="login-subtitle">请登录以继续管理您的商城</p>
-      </div>
-
-      <!-- 登录表单 -->
-      <form class="login-form" @submit.prevent="handleLogin">
-        <div class="form-group">
-          <label class="form-label required">用户名</label>
-          <input
-            v-model="form.username"
-            type="text"
-            class="form-input"
-            placeholder="请输入用户名"
-            autocomplete="username"
-          />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label required">密码</label>
-          <div class="password-input-wrapper">
-            <input
-              v-model="form.password"
-              :type="showPassword ? 'text' : 'password'"
-              class="form-input"
-              placeholder="请输入密码"
-              autocomplete="current-password"
-            />
-            <button
-              type="button"
-              class="password-toggle"
-              @click="showPassword = !showPassword"
-            >
-              <svg v-if="!showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
+        <h1 class="brand-title">Apple Mall</h1>
+        <p class="brand-subtitle">智能商城管理系统</p>
+        
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
               </svg>
-              <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                <line x1="1" y1="1" x2="23" y2="23"/>
+            </div>
+            <span>全面的数据洞察</span>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
               </svg>
-            </button>
+            </div>
+            <span>高效的订单管理</span>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+              </svg>
+            </div>
+            <span>实时的业务追踪</span>
           </div>
         </div>
-
-        <div class="form-options">
-          <label class="remember-me">
-            <input v-model="form.remember" type="checkbox" />
-            <span>记住我</span>
-          </label>
-          <a href="#" class="forgot-link">忘记密码？</a>
-        </div>
-
-        <button
-          type="submit"
-          class="btn btn-primary btn-lg w-full"
-          :disabled="loading"
-        >
-          <span v-if="loading" class="loading"></span>
-          <span v-else>登录</span>
-        </button>
-
-        <p v-if="error" class="error-message">{{ error }}</p>
-      </form>
-
-      <!-- 底部信息 -->
-      <div class="login-footer">
-        <p>登录即表示您同意我们的 <a href="#">服务条款</a> 和 <a href="#">隐私政策</a></p>
+      </div>
+      
+      <!-- 背景装饰 -->
+      <div class="left-decoration">
+        <div class="decoration-circle circle-1"></div>
+        <div class="decoration-circle circle-2"></div>
+        <div class="decoration-circle circle-3"></div>
       </div>
     </div>
 
-    <!-- 背景装饰 -->
-    <div class="login-bg">
-      <div class="bg-gradient"></div>
-      <div class="bg-pattern"></div>
+    <!-- 右侧登录表单区域 -->
+    <div class="login-right">
+      <div class="login-form-wrapper">
+        <div class="login-header">
+          <h2 class="login-title">欢迎回来</h2>
+          <p class="login-desc">请登录您的管理账户</p>
+        </div>
+
+        <form class="login-form" @submit.prevent="handleLogin">
+          <div class="form-group">
+            <label class="form-label">用户名 / 邮箱</label>
+            <div class="input-wrapper" :class="{ 'has-error': errors.username }">
+              <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <input
+                v-model="form.username"
+                type="text"
+                class="form-input"
+                placeholder="请输入用户名或邮箱"
+                @input="clearError('username')"
+              />
+            </div>
+            <p v-if="errors.username" class="error-text">{{ errors.username }}</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">密码</label>
+            <div class="input-wrapper" :class="{ 'has-error': errors.password }">
+              <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <input
+                v-model="form.password"
+                :type="showPassword ? 'text' : 'password'"
+                class="form-input"
+                placeholder="请输入密码"
+                @input="clearError('password')"
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                @click="showPassword = !showPassword"
+              >
+                <svg v-if="!showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
+            <p v-if="errors.password" class="error-text">{{ errors.password }}</p>
+          </div>
+
+          <div class="form-options">
+            <label class="remember-me">
+              <input v-model="form.remember" type="checkbox" />
+              <span class="checkbox-custom"></span>
+              <span>记住登录状态</span>
+            </label>
+            <a href="#" class="forgot-link">忘记密码？</a>
+          </div>
+
+          <button
+            type="submit"
+            class="btn-submit"
+            :class="{ 'is-loading': loading }"
+            :disabled="loading"
+          >
+            <span v-if="loading" class="loading-spinner"></span>
+            <span v-else>登 录</span>
+          </button>
+
+          <p v-if="errorMessage" class="global-error">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ errorMessage }}
+          </p>
+        </form>
+
+        <div class="login-footer">
+          <p>© 2024 Apple Mall. All rights reserved.</p>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -108,24 +164,46 @@ const form = reactive({
 })
 
 const loading = ref(false)
-const error = ref('')
+const errorMessage = ref('')
 const showPassword = ref(false)
+const errors = reactive({
+  username: '',
+  password: ''
+})
+
+const clearError = (field) => {
+  errors[field] = ''
+  errorMessage.value = ''
+}
+
+const validate = () => {
+  let isValid = true
+  
+  if (!form.username.trim()) {
+    errors.username = '请输入用户名'
+    isValid = false
+  }
+  
+  if (!form.password) {
+    errors.password = '请输入密码'
+    isValid = false
+  }
+  
+  return isValid
+}
 
 const handleLogin = async () => {
-  if (!form.username || !form.password) {
-    error.value = '请输入用户名和密码'
-    return
-  }
-
+  if (!validate()) return
+  
   loading.value = true
-  error.value = ''
-
+  errorMessage.value = ''
+  
   try {
     const res = await adminLogin({
       username: form.username,
       password: form.password
     })
-
+    
     if (res.code === 200) {
       // 保存token
       localStorage.setItem('admin_token', res.data.token)
@@ -134,10 +212,10 @@ const handleLogin = async () => {
       // 跳转到首页
       router.push('/admin/dashboard')
     } else {
-      error.value = res.message || '登录失败'
+      errorMessage.value = res.message || '用户名或密码错误'
     }
   } catch (err) {
-    error.value = err.message || '网络错误，请稍后重试'
+    errorMessage.value = err.message || '网络连接失败，请稍后重试'
   } finally {
     loading.value = false
   }
@@ -145,196 +223,378 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-.login-page {
+/* === 布局 === */
+.login-wrapper {
+  display: flex;
   min-height: 100vh;
+}
+
+/* === 左侧装饰区域 === */
+.login-left {
+  flex: 1;
+  background: linear-gradient(135deg, #0066CC 0%, #0071E3 50%, #5AC8FA 100%);
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-primary);
-  position: relative;
   overflow: hidden;
 }
 
-.login-container {
-  width: 100%;
-  max-width: 400px;
-  padding: var(--spacing-2xl);
-  background: var(--bg-secondary);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-lg);
-  position: relative;
-  z-index: 10;
-  margin: var(--spacing-lg);
+@media (max-width: 900px) {
+  .login-left {
+    display: none;
+  }
 }
 
-.login-header {
+.brand-content {
+  position: relative;
+  z-index: 2;
   text-align: center;
-  margin-bottom: var(--spacing-xl);
+  color: white;
+  padding: 48px;
 }
 
-.login-logo {
-  margin-bottom: var(--spacing-lg);
+.brand-logo {
+  margin-bottom: 24px;
 }
 
-.login-logo svg {
-  width: 64px;
-  height: 64px;
+.brand-logo svg {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
 }
 
-.login-title {
-  font-size: 28px;
+.brand-title {
+  font-size: 36px;
   font-weight: 600;
-  color: var(--text-primary);
   letter-spacing: -0.02em;
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: 8px;
 }
 
-.login-subtitle {
-  font-size: var(--font-size-base);
-  color: var(--text-secondary);
+.brand-subtitle {
+  font-size: 18px;
+  opacity: 0.9;
+  margin-bottom: 48px;
 }
 
-.login-form {
-  margin-top: var(--spacing-xl);
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  text-align: left;
 }
 
-.form-group {
-  margin-bottom: var(--spacing-lg);
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 15px;
+  opacity: 0.95;
 }
 
-.password-input-wrapper {
-  position: relative;
-}
-
-.password-input-wrapper .form-input {
-  padding-right: 48px;
-}
-
-.password-toggle {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-tertiary);
-  padding: 4px;
+.feature-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.password-toggle:hover {
-  color: var(--text-secondary);
-}
-
-.form-options {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--spacing-lg);
-}
-
-.remember-me {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-
-.remember-me input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--color-primary);
-}
-
-.forgot-link {
-  font-size: var(--font-size-sm);
-  color: var(--text-link);
-  text-decoration: none;
-}
-
-.forgot-link:hover {
-  text-decoration: underline;
-}
-
-.error-message {
-  margin-top: var(--spacing-md);
-  padding: var(--spacing-md);
-  background: #FFEBE9;
-  border-radius: var(--border-radius-sm);
-  color: var(--color-danger);
-  font-size: var(--font-size-sm);
-  text-align: center;
-}
-
-.login-footer {
-  margin-top: var(--spacing-xl);
-  text-align: center;
-}
-
-.login-footer p {
-  font-size: var(--font-size-xs);
-  color: var(--text-tertiary);
-}
-
-.login-footer a {
-  color: var(--text-link);
-  text-decoration: none;
-}
-
-.login-footer a:hover {
-  text-decoration: underline;
-}
-
 /* 背景装饰 */
-.login-bg {
+.left-decoration {
   position: absolute;
   inset: 0;
   overflow: hidden;
 }
 
-.bg-gradient {
+.decoration-circle {
   position: absolute;
-  top: -50%;
-  right: -30%;
-  width: 80%;
-  height: 150%;
-  background: radial-gradient(ellipse at center, rgba(0, 113, 227, 0.08) 0%, transparent 70%);
-  animation: float 20s ease-in-out infinite;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.bg-pattern {
+.circle-1 {
+  width: 400px;
+  height: 400px;
+  top: -100px;
+  right: -100px;
+}
+
+.circle-2 {
+  width: 300px;
+  height: 300px;
+  bottom: -50px;
+  left: -50px;
+}
+
+.circle-3 {
+  width: 200px;
+  height: 200px;
+  bottom: 30%;
+  right: 10%;
+}
+
+/* === 右侧表单区域 === */
+.login-right {
+  width: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  padding: 48px;
+}
+
+@media (max-width: 900px) {
+  .login-right {
+    width: 100%;
+    padding: 32px 24px;
+  }
+}
+
+.login-form-wrapper {
+  width: 100%;
+  max-width: 360px;
+}
+
+.login-header {
+  margin-bottom: 40px;
+}
+
+.login-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+
+.login-desc {
+  font-size: 15px;
+  color: #6e6e73;
+}
+
+/* === 表单样式 === */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1d1d1f;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #d2d2d7;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  background: #ffffff;
+}
+
+.input-wrapper:focus-within {
+  border-color: #0071E3;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12);
+}
+
+.input-wrapper.has-error {
+  border-color: #ff3b30;
+}
+
+.input-wrapper.has-error:focus-within {
+  box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.12);
+}
+
+.input-icon {
   position: absolute;
-  bottom: -20%;
-  left: -20%;
-  width: 60%;
-  height: 100%;
-  background: radial-gradient(ellipse at center, rgba(90, 200, 250, 0.06) 0%, transparent 70%);
-  animation: float 25s ease-in-out infinite reverse;
+  left: 14px;
+  color: #86868b;
+  pointer-events: none;
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(30px, -30px);
-  }
+.form-input {
+  width: 100%;
+  padding: 14px 14px 14px 46px;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  color: #1d1d1f;
+  background: transparent;
 }
 
-/* 响应式 */
-@media (max-width: 480px) {
-  .login-container {
-    padding: var(--spacing-lg);
-    margin: var(--spacing-md);
-  }
+.form-input::placeholder {
+  color: #86868b;
+}
 
-  .login-title {
-    font-size: 24px;
-  }
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  padding: 6px;
+  color: #86868b;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.password-toggle:hover {
+  color: #6e6e73;
+  background: #f5f5f7;
+}
+
+.error-text {
+  font-size: 13px;
+  color: #ff3b30;
+  margin-top: 4px;
+}
+
+/* === 选项区域 === */
+.form-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #6e6e73;
+  cursor: pointer;
+  user-select: none;
+}
+
+.remember-me input[type="checkbox"] {
+  display: none;
+}
+
+.checkbox-custom {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #d2d2d7;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.remember-me input:checked + .checkbox-custom {
+  background: #0071E3;
+  border-color: #0071E3;
+}
+
+.remember-me input:checked + .checkbox-custom::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.forgot-link {
+  font-size: 14px;
+  color: #0071E3;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.forgot-link:hover {
+  color: #0077ed;
+}
+
+/* === 提交按钮 === */
+.btn-submit {
+  width: 100%;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #ffffff;
+  background: #0071E3;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: #0077ed;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.3);
+}
+
+.btn-submit:active:not(:disabled) {
+  background: #006edb;
+  transform: translateY(0);
+}
+
+.btn-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-submit.is-loading {
+  background: #5ac8fa;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* === 全局错误 === */
+.global-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #ffebea;
+  border-radius: 8px;
+  color: #ff3b30;
+  font-size: 14px;
+}
+
+/* === 底部 === */
+.login-footer {
+  margin-top: 48px;
+  text-align: center;
+}
+
+.login-footer p {
+  font-size: 12px;
+  color: #86868b;
 }
 </style>

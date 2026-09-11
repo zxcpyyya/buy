@@ -81,6 +81,12 @@ const routes = [
     meta: { title: '物流跟踪', requireAuth: true }
   },
   {
+    path: '/browse-history',
+    name: 'BrowseHistory',
+    component: () => import('@/views/BrowseHistory.vue'),
+    meta: { title: '浏览历史', requireAuth: true }
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/Login.vue'),

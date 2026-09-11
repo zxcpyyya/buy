@@ -1,8 +1,11 @@
 package com.mall.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mall.dto.AdminOrderQueryDTO;
 import com.mall.dto.CreateOrderDTO;
 import com.mall.entity.OrderInfoDO;
+import com.mall.vo.AdminOrderVO;
+import com.mall.vo.OrderStatsVO;
 import com.mall.vo.OrderVO;
 
 import java.util.List;
@@ -88,4 +91,40 @@ public interface OrderService {
      * @return 是否成功
      */
     Boolean payOrder(Long orderId, Long userId);
+    
+    // ==================== 管理员/商家接口 ====================
+    
+    /**
+     * 后台分页查询订单
+     *
+     * @param queryDTO 查询条件
+     * @return 分页结果
+     */
+    Page<AdminOrderVO> getAdminOrderPage(AdminOrderQueryDTO queryDTO);
+    
+    /**
+     * 获取订单统计
+     *
+     * @return 订单统计
+     */
+    OrderStatsVO getOrderStats();
+    
+    /**
+     * 后台发货
+     *
+     * @param orderId 订单ID
+     * @param companyCode 物流公司编码
+     * @param companyName 物流公司名称
+     * @param trackingNo 运单号
+     * @return 是否成功
+     */
+    Boolean shipOrder(Long orderId, String companyCode, String companyName, String trackingNo);
+    
+    /**
+     * 后台取消订单
+     *
+     * @param orderId 订单ID
+     * @return 是否成功
+     */
+    Boolean adminCancelOrder(Long orderId);
 }

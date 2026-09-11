@@ -49,6 +49,7 @@ public class OrderServiceImpl implements OrderService {
     private final CartItemMapper cartItemMapper;
     private final ProductMapper productMapper;
     private final AddressMapper addressMapper;
+    private final UserMapper userMapper;
     private final ProductService productService;
     private final CouponService couponService;
     private final PointsService pointsService;
@@ -504,5 +505,231 @@ public class OrderServiceImpl implements OrderService {
             case 5 -> "已取消";
             default -> "未知状态";
         };
+    }
+
+    // ==================== 管理员/商家接口实现 ====================
+
+    /**
+     * 后台分页查询订单
+     */
+    @Override
+    public Page<AdminOrderVO> getAdminOrderPage(AdminOrderQueryDTO queryDTO) {
+        Page<OrderInfoDO> page = new Page<>(queryDTO.getPageNum(), queryDTO.getPageSize());
+
+        LambdaQueryWrapper<OrderInfoDO> wrapper = new LambdaQueryWrapper<>();
+
+        // 按订单号查询
+        if (queryDTO.getOrderNo() != null && !queryDTO.getOrderNo().isEmpty()) {
+            wrapper.eq(OrderInfoDO::getOrderNo, queryDTO.getOrderNo());
+        }
+
+        // 按用户ID查询
+        if (queryDTO.getUserId() != null) {
+            wrapper.eq(OrderInfoDO::getUserId, queryDTO.getUserId());
+        }
+
+        // 按状态查询
+        if (queryDTO.getOrderStatus() != null) {
+            wrapper.eq(OrderInfoDO::getOrderStatus, queryDTO.getOrderStatus());
+        }
+
+        // 按时间范围查询
+        if (queryDTO.getStartTime() != null) {
+            wrapper.ge(OrderInfoDO::getCreateTime, queryDTO.getStartTime());
+        }
+        if (queryDTO.getEndTime() != null) {
+            wrapper.le(OrderInfoDO::getCreateTime, queryDTO.getEndTime());
+        }
+
+        wrapper.orderByDesc(OrderInfoDO::getCreateTime);
+
+        Page<OrderInfoDO> result = orderInfoMapper.selectPage(page, wrapper);
+
+        // 转换结果
+        Page<AdminOrderVO> pageResult = new Page<>(result.getCurrent(), result.getSize(), result.getTotal());
+        pageResult.setRecords(result.getRecords().stream().map(this::convertToAdminOrderVO).collect(Collectors.toList()));
+
+        return pageResult;
+    }
+
+    /**
+     * 获取订单统计
+     */
+    @Override
+    public OrderStatsVO getOrderStats() {
+        OrderStatsVO stats = new OrderStatsVO();
+
+        Long total = orderInfoMapper.selectCount(null);
+        stats.setTotal(total);
+        stats.setPending(orderInfoMapper.selectCount(new LambdaQueryWrapper<OrderInfoDO>().eq(OrderInfoDO::getOrderStatus, 1)));
+        stats.setPaid(orderInfoMapper.selectCount(new LambdaQueryWrapper<OrderInfoDO>().eq(OrderInfoDO::getOrderStatus, 2)));
+        stats.setShipped(orderInfoMapper.selectCount(new LambdaQueryWrapper<OrderInfoDO>().eq(OrderInfoDO::getOrderStatus, 3)));
+        stats.setCompleted(orderInfoMapper.selectCount(new LambdaQueryWrapper<OrderInfoDO>().eq(OrderInfoDO::getOrderStatus, 4)));
+        stats.setCancelled(orderInfoMapper.selectCount(new LambdaQueryWrapper<OrderInfoDO>().eq(OrderInfoDO::getOrderStatus, 5)));
+
+        return stats;
+    }
+
+    /**
+     * 后台发货
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Boolean shipOrder(Long orderId, String companyCode, String companyName, String trackingNo) {
+        // 查询订单
+        OrderInfoDO orderInfoDO = null;
+        for (int dbIndex = 0; dbIndex < ShardingKeyUtils.DB_COUNT; dbIndex++) {
+            for (int tableIndex = 0; tableIndex < ShardingKeyUtils.TABLE_COUNT; tableIndex++) {
+                try (HintManager hintManager = ShardingHintUtils.forceRoute(dbIndex, tableIndex)) {
+                    OrderInfoDO temp = orderInfoMapper.selectById(orderId);
+                    if (temp != null) {
+                        orderInfoDO = temp;
+                        break;
+                    }
+                }
+            }
+            if (orderInfoDO != null) break;
+        }
+
+        if (orderInfoDO == null) {
+            throw new BusinessException("A0401", "订单不存在");
+        }
+
+        // 只有已支付状态可以发货
+        if (orderInfoDO.getOrderStatus() != 2) {
+            throw new BusinessException("A0440", "当前状态无法发货");
+        }
+
+        // 更新订单状态
+        LambdaUpdateWrapper<OrderInfoDO> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(OrderInfoDO::getId, orderId)
+            .set(OrderInfoDO::getOrderStatus, 3) // 已发货
+            .set(OrderInfoDO::getDeliveryStatus, 1)
+            .set(OrderInfoDO::getDeliveryTime, LocalDateTime.now());
+
+        // 创建物流信息
+        expressService.shipOrder(orderId);
+
+        return orderInfoMapper.update(null, wrapper) > 0;
+    }
+
+    /**
+     * 后台取消订单
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Boolean adminCancelOrder(Long orderId) {
+        // 查询订单
+        OrderInfoDO orderInfoDO = null;
+        for (int dbIndex = 0; dbIndex < ShardingKeyUtils.DB_COUNT; dbIndex++) {
+            for (int tableIndex = 0; tableIndex < ShardingKeyUtils.TABLE_COUNT; tableIndex++) {
+                try (HintManager hintManager = ShardingHintUtils.forceRoute(dbIndex, tableIndex)) {
+                    OrderInfoDO temp = orderInfoMapper.selectById(orderId);
+                    if (temp != null) {
+                        orderInfoDO = temp;
+                        break;
+                    }
+                }
+            }
+            if (orderInfoDO != null) break;
+        }
+
+        if (orderInfoDO == null) {
+            throw new BusinessException("A0401", "订单不存在");
+        }
+
+        // 只有待支付或已支付状态可以取消
+        if (orderInfoDO.getOrderStatus() != 1 && orderInfoDO.getOrderStatus() != 2) {
+            throw new BusinessException("A0440", "当前状态无法取消订单");
+        }
+
+        // 退还优惠券
+        if (orderInfoDO.getCouponId() != null) {
+            couponService.returnCoupon(orderInfoDO.getCouponId(), orderInfoDO.getUserId());
+        }
+
+        // 退还积分
+        if (orderInfoDO.getUsePoints() != null && orderInfoDO.getUsePoints() > 0) {
+            pointsService.addPoints(orderInfoDO.getUserId(), orderInfoDO.getUsePoints(), 2,
+                    "管理员取消订单 " + orderInfoDO.getOrderNo() + " 退还积分");
+        }
+
+        // 恢复库存
+        List<OrderItemDO> orderItems = orderItemMapper.selectList(
+            new LambdaQueryWrapper<OrderItemDO>()
+                .eq(OrderItemDO::getOrderId, orderId)
+        );
+
+        for (OrderItemDO item : orderItems) {
+            productService.updateStock(item.getProductId(), item.getQuantity());
+
+            ProductDO product = productMapper.selectById(item.getProductId());
+            if (product != null) {
+                LambdaUpdateWrapper<ProductDO> updateWrapper = new LambdaUpdateWrapper<>();
+                updateWrapper.eq(ProductDO::getId, product.getId())
+                    .set(ProductDO::getSales, Math.max(0, product.getSales() - item.getQuantity()));
+                productMapper.update(null, updateWrapper);
+            }
+        }
+
+        // 更新订单状态
+        LambdaUpdateWrapper<OrderInfoDO> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(OrderInfoDO::getId, orderId)
+            .set(OrderInfoDO::getOrderStatus, 5);
+
+        return orderInfoMapper.update(null, wrapper) > 0;
+    }
+
+    /**
+     * 转换为管理员订单VO
+     */
+    private AdminOrderVO convertToAdminOrderVO(OrderInfoDO orderInfoDO) {
+        AdminOrderVO vo = new AdminOrderVO();
+        vo.setId(orderInfoDO.getId());
+        vo.setOrderNo(orderInfoDO.getOrderNo());
+        vo.setUserId(orderInfoDO.getUserId());
+        vo.setTotalPrice(orderInfoDO.getTotalPrice());
+        vo.setPayPrice(orderInfoDO.getPayPrice());
+        vo.setPayType(orderInfoDO.getPayType());
+        vo.setPayTypeName(orderInfoDO.getPayType() != null ?
+            (orderInfoDO.getPayType() == 1 ? "微信支付" : "支付宝") : null);
+        vo.setOrderStatus(orderInfoDO.getOrderStatus());
+        vo.setOrderStatusName(getOrderStatusName(orderInfoDO.getOrderStatus()));
+        vo.setReceiverName(orderInfoDO.getReceiverName());
+        vo.setReceiverPhone(orderInfoDO.getReceiverPhone());
+        vo.setReceiverAddress(orderInfoDO.getReceiverAddress());
+        vo.setRemark(orderInfoDO.getRemark());
+        vo.setCreateTime(orderInfoDO.getCreateTime());
+        vo.setPayTime(orderInfoDO.getPayTime());
+
+        // 获取用户昵称
+        if (orderInfoDO.getUserId() != null) {
+            UserDO user = userMapper.selectById(orderInfoDO.getUserId());
+            if (user != null) {
+                vo.setUserNickname(user.getNickname() != null ? user.getNickname() : user.getUsername());
+            }
+        }
+
+        // 获取订单商品
+        List<OrderItemDO> items = orderItemMapper.selectList(
+            new LambdaQueryWrapper<OrderItemDO>()
+                .eq(OrderItemDO::getOrderId, orderInfoDO.getId())
+        );
+
+        List<OrderItemVO> itemVOs = items.stream().map(item -> {
+            OrderItemVO itemVO = new OrderItemVO();
+            itemVO.setProductId(item.getProductId());
+            itemVO.setProductName(item.getProductName());
+            itemVO.setProductImage(item.getProductImage());
+            itemVO.setPrice(item.getPrice());
+            itemVO.setQuantity(item.getQuantity());
+            itemVO.setTotalPrice(item.getTotalPrice());
+            return itemVO;
+        }).collect(Collectors.toList());
+
+        vo.setItems(itemVOs);
+        vo.setTotalCount(items.stream().mapToInt(OrderItemDO::getQuantity).sum());
+
+        return vo;
     }
 }

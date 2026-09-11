@@ -71,6 +71,17 @@
           <p>积分余额 {{ pointsBalance }}</p>
         </router-link>
         
+        <router-link to="/browse-history" class="menu-card">
+          <div class="menu-icon">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="16" cy="16" r="10"/>
+              <polyline points="16 8 16 16 20 18"/>
+            </svg>
+          </div>
+          <h3>浏览历史</h3>
+          <p>查看浏览记录</p>
+        </router-link>
+        
         <div class="menu-card" @click="changePassword">
           <div class="menu-icon">
             <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">

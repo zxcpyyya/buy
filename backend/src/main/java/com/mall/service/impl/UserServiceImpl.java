@@ -188,7 +188,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     private UserVO convertToVO(UserDO userDO) {
         UserVO userVO = new UserVO();
         userVO.setId(userDO.getId());
-        userVO.setUsername(userVO.getUsername());
+        userVO.setUsername(userDO.getUsername());
         userVO.setNickname(userDO.getNickname());
         userVO.setEmail(userDO.getEmail());
         userVO.setPhone(userDO.getPhone());

@@ -1,10 +1,13 @@
 package com.mall.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mall.common.annotation.RequireLogin;
+import com.mall.common.annotation.RequirePermission;
 import com.mall.common.result.PageResult;
 import com.mall.common.result.Result;
 import com.mall.dto.ProductDTO;
 import com.mall.dto.ProductQueryDTO;
+import com.mall.service.HistoryService;
 import com.mall.service.ProductService;
 import com.mall.vo.ProductVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +15,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,6 +39,11 @@ public class ProductController {
      * 商品服务
      */
     private final ProductService productService;
+    
+    /**
+     * 历史记录服务（延迟注入避免循环依赖）
+     */
+    private final HistoryService historyService;
     
     /**
      * 分页查询商品列表
@@ -141,7 +150,7 @@ public class ProductController {
     
     /**
      * 搜索商品
-     * 
+     *
      * GET /api/product/search
      */
     @GetMapping("/search")
@@ -152,9 +161,23 @@ public class ProductController {
             @Parameter(description = "页码")
             @RequestParam(defaultValue = "1") Integer pageNum,
             @Parameter(description = "每页大小")
-            @RequestParam(defaultValue = "10") Integer pageSize) {
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @Parameter(description = "是否记录搜索历史")
+            @RequestParam(defaultValue = "true") Boolean recordHistory) {
         log.debug("搜索商品请求, keyword={}, pageNum={}, pageSize={}", 
             keyword, pageNum, pageSize);
+        
+        // 记录搜索历史
+        if (recordHistory && keyword != null && !keyword.trim().isEmpty()) {
+            try {
+                Long userId = com.mall.context.UserContext.getUserId();
+                if (userId != null) {
+                    historyService.addSearchHistory(userId, keyword.trim());
+                }
+            } catch (Exception e) {
+                log.debug("添加搜索历史失败（非登录用户）");
+            }
+        }
         
         Page<ProductVO> page = productService.searchProducts(
             keyword, pageNum, pageSize);

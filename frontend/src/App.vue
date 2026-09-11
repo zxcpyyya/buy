@@ -19,9 +19,9 @@ import AppHeader from '@/components/AppHeader.vue'
 import AppFooter from '@/components/AppFooter.vue'
 
 const route = useRoute()
-// 登录、注册页面不显示头尾
-const showHeader = computed(() => !['Login', 'Register'].includes(route.name))
-const showFooter = computed(() => !['Login', 'Register'].includes(route.name))
+// 登录、注册、后台管理页面不显示头尾
+const showHeader = computed(() => !route.path.startsWith('/admin') && !['Login', 'Register'].includes(route.name))
+const showFooter = computed(() => !route.path.startsWith('/admin') && !['Login', 'Register'].includes(route.name))
 </script>
 
 <style lang="scss">

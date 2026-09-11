@@ -22,23 +22,23 @@
 
     <!-- 统计卡片 -->
     <div class="stats-row">
-      <div class="stat-mini" :class="{ active: statusFilter === '' }" @click="statusFilter = ''">
+      <div class="stat-mini" :class="{ active: statusFilter === '' }" @click="handleStatusFilter('')">
         <span class="stat-num">{{ stats.total }}</span>
         <span class="stat-text">全部订单</span>
       </div>
-      <div class="stat-mini" :class="{ active: statusFilter === '0' }" @click="statusFilter = '0'">
+      <div class="stat-mini" :class="{ active: statusFilter === '1' }" @click="handleStatusFilter('1')">
         <span class="stat-num">{{ stats.pending }}</span>
         <span class="stat-text">待支付</span>
       </div>
-      <div class="stat-mini" :class="{ active: statusFilter === '1' }" @click="statusFilter = '1'">
+      <div class="stat-mini" :class="{ active: statusFilter === '2' }" @click="handleStatusFilter('2')">
         <span class="stat-num">{{ stats.paid }}</span>
         <span class="stat-text">已支付</span>
       </div>
-      <div class="stat-mini" :class="{ active: statusFilter === '2' }" @click="statusFilter = '2'">
+      <div class="stat-mini" :class="{ active: statusFilter === '3' }" @click="handleStatusFilter('3')">
         <span class="stat-num">{{ stats.shipped }}</span>
         <span class="stat-text">已发货</span>
       </div>
-      <div class="stat-mini" :class="{ active: statusFilter === '3' }" @click="statusFilter = '3'">
+      <div class="stat-mini" :class="{ active: statusFilter === '4' }" @click="handleStatusFilter('4')">
         <span class="stat-num">{{ stats.completed }}</span>
         <span class="stat-text">已完成</span>
       </div>
@@ -92,12 +92,6 @@
           <div class="order-info">
             <span class="order-no">订单号：{{ order.orderNo }}</span>
             <span class="order-time">{{ formatTime(order.createTime) }}</span>
-            <span v-if="!isMerchant" class="order-merchant">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-              </svg>
-              {{ order.merchantName }}
-            </span>
           </div>
           <div class="order-status" :class="'status-' + order.status">
             {{ getStatusText(order.status) }}
@@ -118,7 +112,6 @@
           </div>
         </div>
 
-        <!-- 订单底部 -->
         <div class="order-footer">
           <div class="order-summary">
             <span class="buyer">
@@ -139,23 +132,23 @@
 
             <!-- 商家操作 -->
             <template v-if="isMerchant">
-              <button v-if="order.status === 1" class="btn btn-primary btn-sm" @click="showShipModal(order)">
+              <button v-if="order.status === 2" class="btn btn-primary btn-sm" @click="showShipModal(order)">
                 发货
               </button>
-              <button v-if="order.status === 2" class="btn btn-ghost btn-sm" @click="viewLogistics(order)">
+              <button v-if="order.status === 3" class="btn btn-ghost btn-sm" @click="viewLogistics(order)">
                 查看物流
               </button>
             </template>
 
             <!-- 管理员操作 -->
             <template v-else>
-              <button v-if="order.status === 0" class="btn btn-ghost btn-sm" @click="handleOrder(order, 'cancel')">
+              <button v-if="order.status === 1" class="btn btn-ghost btn-sm" @click="handleOrder(order, 'cancel')">
                 取消
               </button>
-              <button v-if="order.status === 1" class="btn btn-primary btn-sm" @click="showShipModal(order)">
+              <button v-if="order.status === 2" class="btn btn-primary btn-sm" @click="showShipModal(order)">
                 发货
               </button>
-              <button v-if="order.status === 2" class="btn btn-ghost btn-sm" @click="viewLogistics(order)">
+              <button v-if="order.status === 3" class="btn btn-ghost btn-sm" @click="viewLogistics(order)">
                 查看物流
               </button>
             </template>
@@ -209,13 +202,11 @@
         <div class="modal-body">
           <div class="form-group">
             <label class="form-label required">物流公司</label>
-            <select v-model="shippingForm.company" class="form-input form-select">
+            <select v-model="shippingForm.company" class="form-input form-select" @change="handleCompanyChange">
               <option value="">请选择物流公司</option>
-              <option value="SF">顺丰速运</option>
-              <option value="YTO">圆通速递</option>
-              <option value="ZTO">中通快递</option>
-              <option value="STO">申通快递</option>
-              <option value="YD">韵达快递</option>
+              <option v-for="company in expressCompanies" :key="company.code" :value="company.code">
+                {{ company.name }}
+              </option>
             </select>
           </div>
           <div class="form-group">
@@ -235,6 +226,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { hasPermission, isMerchant as checkMerchant } from '@/utils/permission'
+import request from '@/utils/request'
 
 // 角色判断
 const isMerchant = computed(() => checkMerchant())
@@ -242,89 +234,36 @@ const isMerchant = computed(() => checkMerchant())
 // 权限检查
 const hasPermissionCheck = (perm) => hasPermission(perm)
 
+// 加载状态
+const loading = ref(false)
+
 // 筛选
 const statusFilter = ref('')
 const filters = reactive({
   orderNo: '',
-  merchantId: '',
+  userId: '',
   startDate: '',
   endDate: '',
-  status: '',
+  orderStatus: '',
   page: 1,
   pageSize: 10
 })
 
-// 商家列表
-const merchants = ref([
-  { id: 1, name: 'Apple官方旗舰店' },
-  { id: 2, name: '小米商城' },
-  { id: 3, name: 'Nike官方店' },
-  { id: 4, name: '我的店铺' }
-])
-
 // 统计数据
 const stats = reactive({
-  total: 128,
-  pending: 12,
-  paid: 35,
-  shipped: 28,
-  completed: 48,
-  cancelled: 5
+  total: 0,
+  pending: 0,
+  paid: 0,
+  shipped: 0,
+  completed: 0,
+  cancelled: 0
 })
 
 // 订单列表
-const orders = ref([
-  {
-    id: 1,
-    orderNo: 'ORD202409040001',
-    createTime: '2024-09-04 10:30:25',
-    status: 1,
-    merchantName: 'Apple官方旗舰店',
-    userName: '张明',
-    userPhone: '138****1234',
-    address: '北京市朝阳区建国路88号',
-    totalCount: 1,
-    totalAmount: 9998,
-    items: [
-      { id: 1, name: 'iPhone 15 Pro Max 256GB', spec: '深空黑', price: 9998, count: 1, subtotal: 9998, image: 'https://picsum.photos/80/80?random=1' }
-    ]
-  },
-  {
-    id: 2,
-    orderNo: 'ORD202409040002',
-    createTime: '2024-09-04 09:15:00',
-    status: 2,
-    merchantName: '我的店铺',
-    userName: '李华',
-    userPhone: '139****5678',
-    address: '上海市浦东新区世纪大道1000号',
-    totalCount: 2,
-    totalAmount: 2599,
-    items: [
-      { id: 2, name: '商家商品A', spec: '默认规格', price: 1299, count: 1, subtotal: 1299, image: 'https://picsum.photos/80/80?random=8' },
-      { id: 3, name: '商家商品B', spec: '默认规格', price: 1300, count: 1, subtotal: 1300, image: 'https://picsum.photos/80/80?random=9' }
-    ]
-  },
-  {
-    id: 3,
-    orderNo: 'ORD202409030015',
-    createTime: '2024-09-03 14:22:10',
-    status: 3,
-    merchantName: 'Nike官方店',
-    userName: '王丽',
-    userPhone: '137****9012',
-    address: '广州市天河区珠江新城',
-    totalCount: 1,
-    totalAmount: 1499,
-    items: [
-      { id: 3, name: 'Nike Air Jordan 1', spec: 'Chicago 42码', price: 1499, count: 1, subtotal: 1499, image: 'https://picsum.photos/80/80?random=3' }
-    ],
-    shippingInfo: '顺丰速运 SF1234567890'
-  }
-])
+const orders = ref([])
 
 // 总记录数
-const total = ref(128)
+const total = ref(0)
 const totalPages = computed(() => Math.ceil(total.value / filters.pageSize))
 
 // 可见的页码
@@ -346,13 +285,29 @@ const selectedOrder = ref(null)
 // 发货表单
 const shippingForm = reactive({
   company: '',
+  companyName: '',
   trackingNo: ''
 })
 
+// 物流公司列表
+const expressCompanies = [
+  { code: 'SF', name: '顺丰速运' },
+  { code: 'YTO', name: '圆通速递' },
+  { code: 'ZTO', name: '中通快递' },
+  { code: 'STO', name: '申通快递' },
+  { code: 'YD', name: '韵达快递' },
+  { code: 'EMS', name: 'EMS' }
+]
+
 // 方法
 const getStatusText = (status) => {
-  const statusMap = { 0: '待支付', 1: '已支付', 2: '已发货', 3: '已完成', 4: '已取消' }
+  const statusMap = { 1: '待支付', 2: '已支付', 3: '已发货', 4: '已完成', 5: '已取消' }
   return statusMap[status] || '未知'
+}
+
+const getStatusClass = (status) => {
+  const statusMap = { 1: 'pending', 2: 'processing', 3: 'shipped', 4: 'completed', 5: 'cancelled' }
+  return statusMap[status] || 'pending'
 }
 
 const formatTime = (time) => {
@@ -360,69 +315,165 @@ const formatTime = (time) => {
   return time.replace('T', ' ').slice(0, 19)
 }
 
-const searchOrders = () => { filters.page = 1 }
+const formatPrice = (price) => {
+  if (price == null) return '0.00'
+  return Number(price).toFixed(2)
+}
+
+// 获取订单列表
+const fetchOrders = async () => {
+  loading.value = true
+  try {
+    const params = {
+      pageNum: filters.page,
+      pageSize: filters.pageSize
+    }
+    if (filters.orderNo) params.orderNo = filters.orderNo
+    if (filters.orderStatus) params.orderStatus = parseInt(filters.orderStatus)
+    if (filters.startDate) params.startTime = filters.startDate + ' 00:00:00'
+    if (filters.endDate) params.endTime = filters.endDate + ' 23:59:59'
+
+    const res = await request.get('/admin/order/list', { params })
+    if (res && res.list) {
+      orders.value = res.list.map(order => ({
+        id: order.id,
+        orderNo: order.orderNo,
+        createTime: order.createTime,
+        status: order.orderStatus,
+        userName: order.userNickname || '用户' + order.userId,
+        userPhone: order.receiverPhone ? order.receiverPhone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : '-',
+        address: order.receiverAddress,
+        totalCount: order.totalCount,
+        totalAmount: formatPrice(order.payPrice),
+        items: (order.items || []).map(item => ({
+          id: item.productId,
+          name: item.productName,
+          spec: '-',
+          price: formatPrice(item.price),
+          count: item.quantity,
+          subtotal: formatPrice(item.totalPrice),
+          image: item.productImage || 'https://picsum.photos/80/80?random=1'
+        })),
+        shippingInfo: order.expressInfo || ''
+      }))
+      total.value = res.total || 0
+    }
+  } catch (e) {
+    console.error('获取订单列表失败', e)
+  } finally {
+    loading.value = false
+  }
+}
+
+// 获取统计数据
+const fetchStats = async () => {
+  try {
+    const res = await request.get('/admin/order/stats')
+    if (res) {
+      stats.total = res.total || 0
+      stats.pending = res.pending || 0
+      stats.paid = res.paid || 0
+      stats.shipped = res.shipped || 0
+      stats.completed = res.completed || 0
+      stats.cancelled = res.cancelled || 0
+    }
+  } catch (e) {
+    console.error('获取统计数据失败', e)
+  }
+}
+
+const searchOrders = () => {
+  filters.page = 1
+  fetchOrders()
+}
 
 const resetFilters = () => {
   filters.orderNo = ''
-  filters.merchantId = ''
+  filters.userId = ''
   filters.startDate = ''
   filters.endDate = ''
-  filters.status = ''
+  filters.orderStatus = ''
+  filters.page = 1
+  statusFilter.value = ''
+  fetchOrders()
 }
 
 const changePage = (page) => {
   if (page < 1 || page > totalPages.value) return
   filters.page = page
+  fetchOrders()
 }
 
 const viewOrder = (order) => {
-  console.log('查看订单:', order)
+  // 跳转到订单详情
+  window.location.href = `/order/${order.id}`
 }
 
 const showShipModal = (order) => {
   selectedOrder.value = order
   shippingForm.company = ''
+  shippingForm.companyName = ''
   shippingForm.trackingNo = ''
   showShipDialog.value = true
 }
 
-const confirmShip = () => {
+const confirmShip = async () => {
   if (!shippingForm.company || !shippingForm.trackingNo) {
     alert('请填写完整的物流信息')
     return
   }
-  selectedOrder.value.status = 2
-  selectedOrder.value.shippingInfo = `${getCompanyName(shippingForm.company)} ${shippingForm.trackingNo}`
-  showShipDialog.value = false
+  
+  try {
+    await request.post(`/admin/order/${selectedOrder.value.id}/ship`, null, {
+      params: {
+        companyCode: shippingForm.company,
+        companyName: shippingForm.companyName,
+        trackingNo: shippingForm.trackingNo
+      }
+    })
+    alert('发货成功')
+    showShipDialog.value = false
+    fetchOrders()
+    fetchStats()
+  } catch (e) {
+    console.error('发货失败', e)
+  }
 }
 
-const getCompanyName = (code) => {
-  const map = { 'SF': '顺丰速运', 'YTO': '圆通速递', 'ZTO': '中通快递', 'STO': '申通快递', 'YD': '韵达快递' }
-  return map[code] || code
+const handleCompanyChange = () => {
+  const company = expressCompanies.find(c => c.code === shippingForm.company)
+  shippingForm.companyName = company ? company.name : ''
 }
 
 const viewLogistics = (order) => {
-  console.log('查看物流:', order)
+  window.location.href = `/express/${order.id}`
 }
 
-const handleOrder = (order, action) => {
+const handleOrder = async (order, action) => {
   if (action === 'cancel') {
-    if (confirm('确定要取消该订单吗？')) {
-      order.status = 4
+    if (!confirm('确定要取消该订单吗？')) return
+    try {
+      await request.put(`/admin/order/${order.id}/cancel`)
+      alert('订单已取消')
+      fetchOrders()
+      fetchStats()
+    } catch (e) {
+      console.error('取消订单失败', e)
     }
   }
 }
 
+// 监听状态筛选
+const handleStatusFilter = (status) => {
+  statusFilter.value = status
+  filters.orderStatus = status
+  filters.page = 1
+  fetchOrders()
+}
+
 onMounted(() => {
-  // 商家用户只能看到自己店铺的订单
-  if (isMerchant.value) {
-    orders.value = orders.value.filter(o => o.merchantName === '我的店铺')
-    stats.total = orders.value.length
-    stats.pending = orders.value.filter(o => o.status === 0).length
-    stats.paid = orders.value.filter(o => o.status === 1).length
-    stats.shipped = orders.value.filter(o => o.status === 2).length
-    stats.completed = orders.value.filter(o => o.status === 3).length
-  }
+  fetchOrders()
+  fetchStats()
 })
 </script>
 
