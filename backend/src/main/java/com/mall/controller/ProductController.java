@@ -171,51 +171,57 @@ public class ProductController {
     
     /**
      * 创建商品（管理员）
-     * 
+     *
      * POST /api/product
      */
     @PostMapping
+    @RequireLogin
+    @RequirePermission("product:create")
     @Operation(summary = "创建商品", description = "创建新商品")
     public Result<Long> createProduct(@RequestBody ProductDTO productDTO) {
         log.info("创建商品请求, name={}", productDTO.getName());
-        
+
         Long productId = productService.createProduct(productDTO);
-        
+
         return Result.success("创建成功", productId);
     }
-    
+
     /**
      * 更新商品（管理员）
-     * 
+     *
      * PUT /api/product/{id}
      */
     @PutMapping("/{id}")
+    @RequireLogin
+    @RequirePermission("product:update")
     @Operation(summary = "更新商品", description = "更新商品信息")
     public Result<Boolean> updateProduct(
             @Parameter(description = "商品ID")
             @PathVariable Long id,
             @RequestBody ProductDTO productDTO) {
         log.info("更新商品请求, productId={}", id);
-        
+
         Boolean result = productService.updateProduct(id, productDTO);
-        
+
         return Result.success(result);
     }
-    
+
     /**
      * 删除商品（管理员）
-     * 
+     *
      * DELETE /api/product/{id}
      */
     @DeleteMapping("/{id}")
+    @RequireLogin
+    @RequirePermission("product:delete")
     @Operation(summary = "删除商品", description = "删除商品")
     public Result<Boolean> deleteProduct(
             @Parameter(description = "商品ID")
             @PathVariable Long id) {
         log.info("删除商品请求, productId={}", id);
-        
+
         Boolean result = productService.deleteProduct(id);
-        
+
         return Result.success(result);
     }
 }

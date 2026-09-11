@@ -6,6 +6,7 @@ import com.mall.common.annotation.RequirePermission;
 import com.mall.common.annotation.RequireRole;
 import com.mall.common.enums.UserType;
 import com.mall.common.exception.BusinessException;
+import com.mall.common.ratelimit.TokenBucketLimiter;
 import com.mall.context.AdminContext;
 import com.mall.service.AdminAuthService;
 import com.mall.service.JwtService;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
  * 2. 验证用户登录状态
  * 3. 验证用户角色
  * 4. 验证用户权限
+ * 5. IP追踪和限流
  *
  * @author xiu
  */
@@ -40,11 +42,35 @@ public class AuthInterceptor implements HandlerInterceptor {
     @Autowired
     private AdminAuthService adminAuthService;
 
+    /**
+     * 登录接口限流配置
+     */
+    private static final int LOGIN_RATE = 5;   // 每秒5个请求
+    private static final int LOGIN_CAPACITY = 10; // 突发容量10
+
+    /**
+     * 普通接口限流配置
+     */
+    private static final int NORMAL_RATE = 30;  // 每秒30个请求
+    private static final int NORMAL_CAPACITY = 60; // 突发容量60
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // 如果不是HandlerMethod，直接放行
         if (!(handler instanceof HandlerMethod)) {
             return true;
+        }
+
+        String clientIp = getClientIp(request);
+        String uri = request.getRequestURI();
+
+        // 1. IP限流检查
+        if (!checkRateLimit(clientIp, uri)) {
+            log.warn("IP限流触发: ip={}, uri={}", clientIp, uri);
+            response.setStatus(429);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"code\":429,\"message\":\"请求过于频繁，请稍后再试\"}");
+            return false;
         }
 
         HandlerMethod handlerMethod = (HandlerMethod) handler;
@@ -192,5 +218,60 @@ public class AuthInterceptor implements HandlerInterceptor {
         adminUser.setUserType(userVO.getUserType() != null ? userVO.getUserType() : UserType.ADMIN);
 
         return adminUser;
+    }
+
+    /**
+     * 获取客户端IP
+     */
+    private String getClientIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_CLIENT_IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+
+        // 多级代理时取第一个IP
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0].trim();
+        }
+
+        return ip;
+    }
+
+    /**
+     * IP限流检查
+     */
+    private boolean checkRateLimit(String clientIp, String uri) {
+        // 检查IP是否被封禁
+        if (TokenBucketLimiter.isBlocked(clientIp)) {
+            log.warn("IP被封禁: ip={}", clientIp);
+            return false;
+        }
+
+        // 登录接口特殊限流
+        if (isLoginEndpoint(uri)) {
+            return TokenBucketLimiter.tryAcquire("login:" + clientIp, LOGIN_RATE, LOGIN_CAPACITY);
+        }
+
+        // 普通接口限流
+        return TokenBucketLimiter.tryAcquire("api:" + clientIp, NORMAL_RATE, NORMAL_CAPACITY);
+    }
+
+    /**
+     * 判断是否为登录接口
+     */
+    private boolean isLoginEndpoint(String uri) {
+        return uri.contains("/login") || uri.contains("/auth/login");
     }
 }

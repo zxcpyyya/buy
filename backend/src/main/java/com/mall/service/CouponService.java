@@ -1,5 +1,6 @@
 package com.mall.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mall.dto.CouponTemplateDTO;
 import com.mall.vo.CouponVO;
 
@@ -75,6 +76,8 @@ public interface CouponService {
      */
     List<CouponVO> getAvailableTemplates(Long userId);
 
+    // ========== 管理员接口 ==========
+
     /**
      * 创建优惠券模板（管理员）
      *
@@ -91,6 +94,23 @@ public interface CouponService {
      * @return 是否成功
      */
     Boolean updateTemplate(Long id, CouponTemplateDTO dto);
+
+    /**
+     * 删除优惠券模板（管理员）
+     *
+     * @param id 模板ID
+     * @return 是否成功
+     */
+    Boolean deleteTemplate(Long id);
+
+    /**
+     * 分页查询优惠券模板（管理员）
+     *
+     * @param pageNum  页码
+     * @param pageSize 每页大小
+     * @return 分页结果
+     */
+    Page<CouponVO> getTemplateList(Integer pageNum, Integer pageSize);
 
     /**
      * 获取优惠券模板详情

@@ -1,5 +1,8 @@
 package com.mall.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mall.common.exception.BusinessException;
@@ -16,8 +19,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.Objects;
 
@@ -141,21 +142,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         if (Objects.isNull(userDO)) {
             throw new BusinessException("A0201", "用户不存在");
         }
-        
-        // 更新字段
-        if (StringUtils.hasText(updateDTO.getNickname())) {
-            userDO.setNickname(updateDTO.getNickname());
-        }
-        if (StringUtils.hasText(updateDTO.getEmail())) {
-            userDO.setEmail(updateDTO.getEmail());
-        }
-        if (StringUtils.hasText(updateDTO.getPhone())) {
-            userDO.setPhone(updateDTO.getPhone());
-        }
-        if (Objects.nonNull(updateDTO.getGender())) {
-            userDO.setGender(updateDTO.getGender());
-        }
-        
+
+        // 使用BeanCopyUtil智能拷贝非空属性
+        BeanCopyUtil.copyNonNull(updateDTO, userDO);
+
         return this.updateById(userDO);
     }
     

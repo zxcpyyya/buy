@@ -47,6 +47,26 @@ order:
   timeout:
     minutes: 30
 
+# 安全配置
+security:
+  # 限流配置
+  rate-limit:
+    enabled: true
+    login-rate: 5        # 登录接口每秒5个请求
+    login-capacity: 10   # 登录接口突发容量10
+    global-rate: 100     # 全局每秒100个请求
+    global-capacity: 200
+    block-duration: 300  # IP封禁时长（秒）
+    max-fail-attempts: 5 # 连续失败登录次数阈值
+    fail-block-duration: 600 # 连续失败后封禁时长（秒）
+  # XSS防护配置
+  xss:
+    enabled: true
+    filter-params: true
+    filter-body: true
+    filter-headers: false
+    replacement: ""
+
 # 服务端口
 server:
   port: 8080

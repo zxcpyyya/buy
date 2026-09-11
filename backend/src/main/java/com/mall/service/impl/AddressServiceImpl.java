@@ -8,6 +8,7 @@ import com.mall.dto.AddressDTO;
 import com.mall.entity.AddressDO;
 import com.mall.mapper.AddressMapper;
 import com.mall.service.AddressService;
+import com.mall.util.BeanCopyUtil;
 import com.mall.vo.AddressVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -107,27 +108,20 @@ public class AddressServiceImpl implements AddressService {
         if (Objects.isNull(addressDO)) {
             throw new BusinessException("A0401", "收货地址不存在");
         }
-        
+
         // 权限校验
         if (!addressDO.getUserId().equals(userId)) {
             throw new BusinessException("A0301", "无权限修改该地址");
         }
-        
+
         // 如果设置为默认地址，先取消其他默认地址
         if (addressDTO.getIsDefault() != null && addressDTO.getIsDefault() == 1) {
             this.cancelDefaultAddress(userId);
         }
-        
-        // 更新字段
-        addressDO.setConsignee(addressDTO.getConsignee());
-        addressDO.setPhone(addressDTO.getPhone());
-        addressDO.setProvince(addressDTO.getProvince());
-        addressDO.setCity(addressDTO.getCity());
-        addressDO.setDistrict(addressDTO.getDistrict());
-        addressDO.setDetailAddress(addressDTO.getDetailAddress());
-        addressDO.setIsDefault(addressDTO.getIsDefault() != null ? addressDTO.getIsDefault() : 0);
-        addressDO.setLabel(addressDTO.getLabel());
-        
+
+        // 使用BeanCopyUtil智能拷贝非空属性
+        BeanCopyUtil.copyNonNull(addressDTO, addressDO);
+
         return addressMapper.updateById(addressDO) > 0;
     }
     

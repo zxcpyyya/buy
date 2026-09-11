@@ -1,6 +1,8 @@
 package com.mall.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -18,10 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
-import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -224,33 +223,22 @@ public class ProductServiceImpl implements ProductService {
         if (Objects.isNull(productDO)) {
             throw new BusinessException("A0401", "商品不存在");
         }
-        
-        // 更新字段
-        if (StringUtils.hasText(productDTO.getName())) {
-            productDO.setName(productDTO.getName());
-        }
-        if (Objects.nonNull(productDTO.getCategoryId())) {
-            productDO.setCategoryId(productDTO.getCategoryId());
-        }
-        if (Objects.nonNull(productDTO.getPrice())) {
-            productDO.setPrice(productDTO.getPrice());
-        }
-        if (Objects.nonNull(productDTO.getStock())) {
-            productDO.setStock(productDTO.getStock());
-        }
-        if (StringUtils.hasText(productDTO.getImage())) {
-            productDO.setImage(productDTO.getImage());
-        }
-        if (StringUtils.hasText(productDTO.getImages())) {
-            productDO.setImages(productDTO.getImages());
-        }
-        if (StringUtils.hasText(productDTO.getDescription())) {
-            productDO.setDescription(productDTO.getDescription());
-        }
-        if (Objects.nonNull(productDTO.getStatus())) {
-            productDO.setStatus(productDTO.getStatus());
-        }
-        
+
+        // 使用Hutool的CopyOptions配置智能拷贝：String非空白才拷贝，Object非null才拷贝
+        CopyOptions copyOptions = CopyOptions.create()
+                .setIgnoreNullValue(false)
+                .setIgnoreError(true)
+                .setFieldValueEditor(fieldValue -> {
+                    if (fieldValue == null) {
+                        return null;
+                    }
+                    if (fieldValue instanceof String) {
+                        return StrUtil.isBlank((String) fieldValue) ? null : fieldValue;
+                    }
+                    return fieldValue;
+                });
+        BeanUtil.copyProperties(productDTO, productDO, copyOptions);
+
         return productMapper.updateById(productDO) > 0;
     }
     

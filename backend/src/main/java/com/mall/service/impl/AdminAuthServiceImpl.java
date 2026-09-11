@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.mall.common.enums.UserType;
 import com.mall.common.exception.BusinessException;
+import com.mall.common.ratelimit.TokenBucketLimiter;
 import com.mall.dto.AdminLoginDTO;
 import com.mall.entity.SysAdminDO;
 import com.mall.entity.SysPermissionDO;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -49,38 +51,58 @@ public class AdminAuthServiceImpl implements AdminAuthService {
      */
     @Override
     public Map<String, Object> login(AdminLoginDTO loginDTO) {
-        // 1. 验证用户名密码
+        String username = loginDTO.getUsername();
+        String clientIp = getClientIp();
+
+        // 1. 检查IP是否被封禁
+        if (TokenBucketLimiter.isBlocked(clientIp)) {
+            long remaining = TokenBucketLimiter.getRemainingBlockTime(clientIp);
+            throw BusinessException.of(403, "登录过于频繁，请" + remaining + "秒后再试");
+        }
+
+        // 2. 验证用户名密码
         SysAdminDO admin = adminMapper.selectOne(
                 new LambdaQueryWrapper<SysAdminDO>()
-                        .eq(SysAdminDO::getUsername, loginDTO.getUsername())
+                        .eq(SysAdminDO::getUsername, username)
                         .eq(SysAdminDO::getStatus, 1)
         );
 
         if (admin == null) {
+            // 用户不存在，也记录失败（防止试探用户名）
+            TokenBucketLimiter.recordFailLogin(clientIp, 5, 600);
             throw BusinessException.of("A0401", "用户名或密码错误");
         }
 
-        // 2. 验证密码（使用BCrypt）
+        // 3. 验证密码（使用BCrypt）
         if (!org.springframework.security.crypto.bcrypt.BCryptPasswordEncoderFactories.createEncoder()
                 .matches(loginDTO.getPassword(), admin.getPassword())) {
+            // 记录登录失败
+            boolean blocked = TokenBucketLimiter.recordFailLogin(clientIp, 5, 600);
+            if (blocked) {
+                log.warn("IP被临时封禁: ip={}, username={}", clientIp, username);
+                throw BusinessException.of(403, "登录尝试次数过多，请10分钟后再试");
+            }
             throw BusinessException.of("A0401", "用户名或密码错误");
         }
 
-        // 3. 获取用户角色和权限
+        // 4. 登录成功，清除失败记录
+        TokenBucketLimiter.clearFailRecord(clientIp);
+
+        // 5. 获取用户角色和权限
         List<SysRoleDO> roles = getUserRoles(admin.getId());
         List<SysPermissionDO> permissions = getUserPermissions(admin.getId());
 
-        // 4. 构建用户信息
+        // 6. 构建用户信息
         AdminUserVO userVO = buildUserVO(admin, roles, permissions);
 
-        // 5. 生成token
+        // 7. 生成token
         String token = jwtService.generateToken(userVO);
 
-        // 6. 更新登录信息
+        // 8. 更新登录信息
         admin.setLastLoginTime(LocalDateTime.now());
         adminMapper.updateById(admin);
 
-        // 7. 返回结果
+        // 9. 返回结果
         Map<String, Object> result = new HashMap<>();
         result.put("token", token);
         result.put("userInfo", userVO);
@@ -89,9 +111,17 @@ public class AdminAuthServiceImpl implements AdminAuthService {
                 .map(SysPermissionDO::getCode)
                 .collect(Collectors.toList()));
 
-        log.info("后台管理员登录成功, username={}", loginDTO.getUsername());
+        log.info("后台管理员登录成功, username={}, ip={}", username, clientIp);
 
         return result;
+    }
+
+    /**
+     * 获取客户端IP（从ThreadLocal或模拟）
+     */
+    private String getClientIp() {
+        // 实际生产环境应从请求上下文获取
+        return "127.0.0.1";
     }
 
     /**

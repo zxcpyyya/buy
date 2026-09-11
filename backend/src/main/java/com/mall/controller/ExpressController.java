@@ -1,5 +1,7 @@
 package com.mall.controller;
 
+import com.mall.common.annotation.RequireLogin;
+import com.mall.common.annotation.RequirePermission;
 import com.mall.common.result.Result;
 import com.mall.context.UserContext;
 import com.mall.dto.ExpressCreateDTO;
@@ -65,6 +67,8 @@ public class ExpressController {
      * POST /api/express
      */
     @PostMapping
+    @RequireLogin
+    @RequirePermission("express:create")
     @Operation(summary = "创建物流", description = "商家发货时创建物流信息")
     public Result<Long> createExpress(@Valid @RequestBody ExpressCreateDTO dto) {
         Long userId = UserContext.getUserId();
@@ -78,6 +82,8 @@ public class ExpressController {
      * POST /api/express/ship/{orderId}
      */
     @PostMapping("/ship/{orderId}")
+    @RequireLogin
+    @RequirePermission("express:ship")
     @Operation(summary = "模拟发货", description = "模拟订单发货（演示用）")
     public Result<Boolean> shipOrder(
             @Parameter(description = "订单ID")
@@ -92,6 +98,8 @@ public class ExpressController {
      * PUT /api/express/{expressId}/status
      */
     @PutMapping("/{expressId}/status")
+    @RequireLogin
+    @RequirePermission("express:update")
     @Operation(summary = "更新状态", description = "更新物流状态")
     public Result<Boolean> updateStatus(
             @Parameter(description = "物流ID")

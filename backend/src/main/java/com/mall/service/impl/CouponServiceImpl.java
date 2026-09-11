@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mall.common.exception.BusinessException;
 import com.mall.dto.CouponTemplateDTO;
 import com.mall.entity.CouponTemplateDO;
@@ -11,6 +12,7 @@ import com.mall.entity.UserCouponDO;
 import com.mall.mapper.CouponTemplateMapper;
 import com.mall.mapper.UserCouponMapper;
 import com.mall.service.CouponService;
+import com.mall.util.BeanCopyUtil;
 import com.mall.vo.CouponVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -313,8 +315,52 @@ public class CouponServiceImpl implements CouponService {
             throw new BusinessException("C0401", "优惠券模板不存在");
         }
 
-        BeanUtil.copyProperties(dto, template);
+        // 使用BeanCopyUtil智能拷贝非空属性
+        BeanCopyUtil.copyNonNull(dto, template);
         return couponTemplateMapper.updateById(template) > 0;
+    }
+
+    @Override
+    public Boolean deleteTemplate(Long id) {
+        CouponTemplateDO template = couponTemplateMapper.selectById(id);
+        if (Objects.isNull(template)) {
+            throw new BusinessException("C0401", "优惠券模板不存在");
+        }
+
+        // 检查是否有用户已领取
+        long usedCount = userCouponMapper.selectCount(
+            new LambdaQueryWrapper<UserCouponDO>()
+                .eq(UserCouponDO::getTemplateId, id)
+        );
+
+        if (usedCount > 0) {
+            throw new BusinessException("C0401", "已有用户领取该优惠券，无法删除");
+        }
+
+        return couponTemplateMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    public Page<CouponVO> getTemplateList(Integer pageNum, Integer pageSize) {
+        Page<CouponTemplateDO> page = new Page<>(pageNum, pageSize);
+
+        LambdaQueryWrapper<CouponTemplateDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(CouponTemplateDO::getCreateTime);
+
+        Page<CouponTemplateDO> result = couponTemplateMapper.selectPage(page, wrapper);
+
+        // 转换结果
+        Page<CouponVO> voPage = new Page<>(result.getCurrent(), result.getSize(), result.getTotal());
+        voPage.setRecords(result.getRecords().stream()
+            .map(template -> {
+                CouponVO vo = BeanUtil.copyProperties(template, CouponVO.class);
+                vo.setTemplateId(template.getId());
+                vo.setName(template.getName());
+                return vo;
+            })
+            .collect(Collectors.toList()));
+
+        return voPage;
     }
 
     @Override
