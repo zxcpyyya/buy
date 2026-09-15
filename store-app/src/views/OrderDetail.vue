@@ -44,7 +44,7 @@
     <div class="section goods-section">
       <div class="shop-header">
         <img src="https://picsum.photos/32/32?random=shop" class="shop-icon" />
-        <span class="shop-name">Apple Store</span>
+        <span class="shop-name">Store</span>
       </div>
       <div class="goods-list">
         <div class="goods-item" v-for="item in order.items" :key="item.id" @click="$router.push(`/product/${item.productId}`)">

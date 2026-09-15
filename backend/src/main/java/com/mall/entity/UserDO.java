@@ -83,4 +83,21 @@ public class UserDO implements Serializable {
      */
     @TableLogic
     private Integer deleted;
+
+    // ==================== 第三方登录字段 ====================
+
+    /**
+     * GitHub 用户ID
+     */
+    private String githubId;
+
+    /**
+     * GitHub 用户名
+     */
+    private String githubUsername;
+
+    /**
+     * 登录类型：0-本地账号，1-GitHub，2-微信，3-QQ等
+     */
+    private Integer loginType;
 }

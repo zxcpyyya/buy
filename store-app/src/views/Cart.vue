@@ -109,7 +109,7 @@ const cartStores = computed(() => {
   const storeMap = new Map()
   cartItems.value.forEach(item => {
     if (!storeMap.has(item.storeId)) {
-      storeMap.set(item.storeId, { id: item.storeId, name: 'Apple Store' })
+      storeMap.set(item.storeId, { id: item.storeId, name: 'Store' })
     }
   })
   return Array.from(storeMap.values())

@@ -11,7 +11,7 @@
       <!-- 标题 -->
       <div class="title-section">
         <h1 class="title">创建账户</h1>
-        <p class="subtitle">加入 Apple Store，开始购物之旅</p>
+        <p class="subtitle">加入 Store，开始购物之旅</p>
       </div>
 
       <!-- 注册表单 -->

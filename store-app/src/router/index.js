@@ -91,6 +91,12 @@ const routes = [
     name: 'express',
     component: () => import('@/views/ExpressTrack.vue'),
     meta: { title: '物流追踪', requiresAuth: true }
+  },
+  {
+    path: '/github-callback',
+    name: 'github-callback',
+    component: () => import('@/views/GithubCallback.vue'),
+    meta: { title: 'GitHub 登录中', guest: true }
   }
 ]
 
@@ -109,7 +115,7 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach((to, from, next) => {
   // 更新页面标题
-  document.title = to.meta.title ? `${to.meta.title} - Apple Store` : 'Apple Store'
+  document.title = to.meta.title ? `${to.meta.title} - Store` : 'Store'
   
   // 检查登录状态
   const isLoggedIn = !!localStorage.getItem('token')

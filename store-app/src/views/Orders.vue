@@ -100,7 +100,7 @@ const orders = ref([
   {
     id: 1,
     orderNo: '20240904001',
-    shopName: 'Apple Store',
+    shopName: 'Store',
     status: 'pending',
     statusText: '待支付',
     statusClass: 'pending',
@@ -114,7 +114,7 @@ const orders = ref([
   {
     id: 2,
     orderNo: '20240903001',
-    shopName: 'Apple Store',
+    shopName: 'Store',
     status: 'shipped',
     statusText: '配送中',
     statusClass: 'shipped',
@@ -127,7 +127,7 @@ const orders = ref([
   {
     id: 3,
     orderNo: '20240902001',
-    shopName: 'Apple Store',
+    shopName: 'Store',
     status: 'completed',
     statusText: '已完成',
     statusClass: 'completed',

@@ -190,10 +190,38 @@ public class JwtUtil {
         if (claims == null) {
             return null;
         }
-        
+
         Long userId = this.getUserIdFromToken(oldToken);
         String username = this.getUsernameFromToken(oldToken);
-        
+
         return this.generateToken(userId, username);
+    }
+
+    /**
+     * 为GitHub用户生成Token
+     *
+     * @param userId 用户ID
+     * @param username 用户名
+     * @param loginType 登录类型
+     * @return JWT Token
+     */
+    public String generateGithubToken(Long userId, String username, Integer loginType) {
+        Map<String, Object> claims = new HashMap<>(3);
+        claims.put("userId", userId);
+        claims.put("username", username);
+        claims.put("loginType", loginType != null ? loginType : 1); // 默认GitHub登录
+
+        Date now = new Date();
+        Date expirationDate = new Date(now.getTime() + expiration);
+
+        SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+
+        return Jwts.builder()
+                .claims(claims)
+                .subject(username)
+                .issuedAt(now)
+                .expiration(expirationDate)
+                .signWith(key)
+                .compact();
     }
 }

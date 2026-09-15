@@ -76,6 +76,17 @@ file:
     max-file-size: 104857600  # 100MB
     allowed-extensions: jpg,jpeg,png,gif,bmp,webp,mp4,avi,mov,wmv,flv,mp3,wav,flac,aac,ogg,pdf,doc,docx,xls,xlsx,ppt,pptx,txt
 
+# GitHub OAuth 配置
+social:
+  github:
+    # ！！！请替换为你自己的 GitHub OAuth App 配置！！！
+    client-id: your_github_client_id
+    client-secret: your_github_client_secret
+    # 回调地址，需要在 GitHub OAuth App 中配置相同地址
+    redirect-uri: http://localhost:8080/api/auth/github/callback
+    # 授权作用域
+    scope: read:user,user:email
+
 # 服务端口
 server:
   port: 8080

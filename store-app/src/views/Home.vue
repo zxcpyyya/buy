@@ -3,7 +3,7 @@
     <!-- 顶部导航 -->
     <header class="header safe-area-top">
       <div class="header-content">
-        <h1 class="logo">Apple Store</h1>
+        <h1 class="logo">Store</h1>
         <div class="header-actions">
           <button class="icon-btn" @click="$router.push('/cart')">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
