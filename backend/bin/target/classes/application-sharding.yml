@@ -1,0 +1,117 @@
+spring:
+  shardingsphere:
+    # 是否显示 SQL
+    props:
+      sql-show: true
+      max-connections-size-per-query: 1
+      executor-size: 16
+      transaction-type: LOCAL
+    
+    datasource:
+      names: ds0,ds1
+      
+      ds0:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://localhost:3306/mall_ds0?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+        username: root
+        password: root123456
+        hikari:
+          minimum-idle: 5
+          maximum-pool-size: 20
+          connection-timeout: 30000
+          idle-timeout: 600000
+          max-lifetime: 1800000
+      
+      ds1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://localhost:3306/mall_ds1?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+        username: root
+        password: root123456
+        hikari:
+          minimum-idle: 5
+          maximum-pool-size: 20
+          connection-timeout: 30000
+          idle-timeout: 600000
+          max-lifetime: 1800000
+    
+    rules:
+      sharding:
+        tables:
+          # ==================== 订单表（分库分表） ====================
+          order_info:
+            actualDataNodes: ds$->{0..1}.order_info_$->{0..1}
+            databaseStrategy:
+              standard:
+                shardingColumn: user_id
+                shardingAlgorithmName: database_mod_order
+            tableStrategy:
+              standard:
+                shardingColumn: user_id
+                shardingAlgorithmName: table_mod_order
+            keyGenerateStrategy:
+              column: id
+              keyGeneratorName: snowflake
+            
+          # ==================== 订单项表（分库分表） ====================
+          order_item:
+            actualDataNodes: ds$->{0..1}.order_item_$->{0..1}
+            databaseStrategy:
+              standard:
+                shardingColumn: user_id
+                shardingAlgorithmName: database_mod_order_item
+            tableStrategy:
+              standard:
+                shardingColumn: user_id
+                shardingAlgorithmName: table_mod_order_item
+            keyGenerateStrategy:
+              column: id
+              keyGeneratorName: snowflake
+        
+        # ==================== 分片算法 ====================
+        shardingAlgorithms:
+          # 订单库分片算法
+          database_mod_order:
+            type: INLINE
+            props:
+              algorithm-expression: ds${ (user_id % 2) }
+          # 订单表分片算法
+          table_mod_order:
+            type: INLINE
+            props:
+              algorithm-expression: order_info_${ (user_id % 2) }
+          
+          # 订单项库分片算法
+          database_mod_order_item:
+            type: INLINE
+            props:
+              algorithm-expression: ds${ (user_id % 2) }
+          # 订单项表分片算法
+          table_mod_order_item:
+            type: INLINE
+            props:
+              algorithm-expression: order_item_${ (user_id % 2) }
+        
+        # ==================== 分布式主键生成器 ====================
+        keyGenerators:
+          snowflake:
+            type: SNOWFLAKE
+            props:
+              worker-id: 1
+        
+      # ==================== 广播表配置 ====================
+      broadcast-tables:
+        # 广播表：每个分片库都完整复制一份
+        sys_user:
+          refreshTableName: false
+        product_category:
+          refreshTableName: false
+        product:
+          refreshTableName: false
+        cart:
+          refreshTableName: false
+        cart_item:
+          refreshTableName: false
+        address:
+          refreshTableName: false
